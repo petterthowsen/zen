@@ -132,6 +132,7 @@ var keywords = []string{
 	"true",
 	"false",
 	"null",
+	"not",
 }
 
 type Token struct {
@@ -151,11 +152,11 @@ func NewToken(tokenType TokenType, literal string, sourceLocation *common.Source
 
 // Name returns the name of the token type
 func (t *Token) Name() string {
-	return tokenTypeNames[t.Type]
+	return TokenTypeName(t.Type)
 }
 
-// TokenName returns the string name of the token type
-func TokenName(t TokenType) string {
+// TokenTypeName returns the string name of the token type
+func TokenTypeName(t TokenType) string {
 	return tokenTypeNames[t]
 }
 

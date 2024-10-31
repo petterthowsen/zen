@@ -13,6 +13,9 @@ func NewSyntaxError(message string, location *SourceLocation) *SyntaxError {
 }
 
 func (e *SyntaxError) Error() string {
+	if e.Location == nil {
+		return e.Message
+	}
 	var str = e.Message + " at " + e.Location.String() + "\n"
 	return str + e.Location.GetLineWithMarker()
 }

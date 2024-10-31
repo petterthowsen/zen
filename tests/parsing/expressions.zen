@@ -1,0 +1,25 @@
+// Literal expressions
+var answer = 42
+const PI = 3.14
+var zen = true
+var nope = false
+
+var title = "Zen Lang!"
+
+// Binary expressions
+var plus = 1 + 2
+var minus = 5 - 6
+var mult = 3 * 4
+var divide = 10 / 2
+
+var complex1 = 2 + 3 * 4
+var complex2 = (2 + 3) * 4
+
+// Unary expressions
+var negative42 = -42
+
+
+var negated = not true
+
+// Mixed expressions
+var result = -5 + plus * 1.5 + myFunc()

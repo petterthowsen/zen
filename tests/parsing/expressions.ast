@@ -1,0 +1,84 @@
+Program
+  Var Declaration
+    Name: answer
+    Initializer:
+      Literal: 42
+  Const Declaration
+    Name: PI
+    Initializer:
+      Literal: 3.14
+  Var Declaration
+    Name: zen
+    Initializer:
+      Literal: true
+  Var Declaration
+    Name: nope
+    Initializer:
+      Literal: false
+  Var Declaration
+    Name: title
+    Initializer:
+      Literal: Zen Lang!
+  Var Declaration
+    Name: plus
+    Initializer:
+      Binary: +
+        Literal: 1
+        Literal: 2
+  Var Declaration
+    Name: minus
+    Initializer:
+      Binary: -
+        Literal: 5
+        Literal: 6
+  Var Declaration
+    Name: mult
+    Initializer:
+      Binary: *
+        Literal: 3
+        Literal: 4
+  Var Declaration
+    Name: divide
+    Initializer:
+      Binary: /
+        Literal: 10
+        Literal: 2
+  Var Declaration
+    Name: complex1
+    Initializer:
+      Binary: +
+        Literal: 2
+        Binary: *
+          Literal: 3
+          Literal: 4
+  Var Declaration
+    Name: complex2
+    Initializer:
+      Binary: *
+        Binary: +
+          Literal: 2
+          Literal: 3
+        Literal: 4
+  Var Declaration
+    Name: negative42
+    Initializer:
+      Unary: -
+        Literal: 42
+  Var Declaration
+    Name: negated
+    Initializer:
+      Unary: not
+        Literal: true
+  Var Declaration
+    Name: result
+    Initializer:
+      Binary: +
+        Binary: +
+          Unary: -
+            Literal: 5
+          Binary: *
+            Identifier: plus
+            Literal: 1.5
+        Call
+          Callee:
+            Identifier: myFunc

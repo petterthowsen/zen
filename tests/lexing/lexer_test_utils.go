@@ -32,7 +32,7 @@ func verifyTokens(t *testing.T, tokens []lexing.Token, expected []TokenAssert) b
 		actual := tokens[i]
 		if actual.Type != exp.Type || actual.Literal != exp.Literal {
 			t.Errorf("Token mismatch at position %d:\nExpected: Type=%v, Literal='%s'\nGot:      %s",
-				i, lexing.TokenName(exp.Type), exp.Literal, tokenString(actual))
+				i, lexing.TokenTypeName(exp.Type), exp.Literal, tokenString(actual))
 		}
 	}
 
@@ -112,7 +112,7 @@ func LoadAndAssertTokens(t *testing.T, filename string, expected []TokenAssert) 
 
 // Helper function to print token type and literal
 func tokenString(t lexing.Token) string {
-	return fmt.Sprintf("Type=%v, Literal='%s'", lexing.TokenName(t.Type), t.Literal)
+	return fmt.Sprintf("Type=%v, Literal='%s'", lexing.TokenTypeName(t.Type), t.Literal)
 }
 
 func min(a, b int) int {

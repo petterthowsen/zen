@@ -2,6 +2,8 @@
 
 Zen is a high-level interpreted programming language implemented in Go. It features a clean syntax, strong typing, and modern programming concepts.
 
+See spec.zen for example of zen code.
+
 ## Project Structure
 
 ```
@@ -68,7 +70,7 @@ Example token addition:
 // In Token.go
 const (
     // ... existing tokens ...
-    NEW_TOKEN TokenType = iota
+    NEW_TOKEN
 )
 
 var tokenTypeNames = map[TokenType]string{

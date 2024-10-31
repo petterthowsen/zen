@@ -163,12 +163,7 @@ func (p *Parser) error(message string) {
 
 // errorAtToken adds a SyntaxError at the specified token
 func (p *Parser) errorAtToken(token lexing.Token, message string) {
-	var err *common.SyntaxError
-	if token.Type == lexing.EOF {
-		err = common.NewSyntaxError("Unexpected end of file: "+message, token.Location)
-	} else {
-		err = common.NewSyntaxError("Unexpected '"+token.Literal+"': "+message, token.Location)
-	}
+	err := common.NewSyntaxError(message, token.Location)
 	p.errors = append(p.errors, err)
 
 	if p.stopAtFirstError {
@@ -238,12 +233,116 @@ func (p *Parser) parseVarDeclaration() ast.Statement {
 	)
 }
 
-// parseExpression: Parses an expression
+// parseExpression: Entry point for expression parsing
 func (p *Parser) parseExpression() ast.Expression {
-	return p.parsePrimary()
+	return p.parseAdditive()
 }
 
-// parsePrimary: Parses primary expressions (literals for now)
+// parseAdditive: Parses addition and subtraction
+func (p *Parser) parseAdditive() ast.Expression {
+	expr := p.parseMultiplicative()
+
+	for p.match(lexing.PLUS, lexing.MINUS) {
+		operator := p.previous().Literal
+		right := p.parseMultiplicative()
+		if right == nil {
+			if p.isAtEnd() {
+				p.errorAtToken(p.peek(), "Expected expression after operator")
+			} else if p.peek().Type == lexing.PLUS {
+				p.errorAtToken(p.peek(), "Expected expression between operators")
+			} else {
+				p.errorAtToken(p.peek(), "Expected expression after operator")
+			}
+			return nil
+		}
+		expr = expression.NewBinaryExpression(expr, operator, right, p.previous().Location)
+	}
+
+	return expr
+}
+
+// parseMultiplicative: Parses multiplication and division
+func (p *Parser) parseMultiplicative() ast.Expression {
+	if p.check(lexing.MULTIPLY) || p.check(lexing.DIVIDE) {
+		p.errorAtToken(p.peek(), "Expected expression before operator")
+		p.advance() // Skip the operator
+		return nil
+	}
+
+	expr := p.parseUnary()
+
+	for p.match(lexing.MULTIPLY, lexing.DIVIDE) {
+		operator := p.previous().Literal
+		right := p.parseUnary()
+		if right == nil {
+			p.errorAtToken(p.peek(), "Expected expression after operator")
+			return nil
+		}
+		expr = expression.NewBinaryExpression(expr, operator, right, p.previous().Location)
+	}
+
+	return expr
+}
+
+// parseUnary: Parses unary operators
+func (p *Parser) parseUnary() ast.Expression {
+	if p.match(lexing.MINUS) || p.matchKeyword("not") {
+		operator := p.previous().Literal
+		expr := p.parseUnary()
+		if expr == nil {
+			p.errorAtToken(p.peek(), "Expected expression after unary operator")
+			return nil
+		}
+		return expression.NewUnaryExpression(operator, expr, p.previous().Location)
+	}
+
+	return p.parseCall()
+}
+
+// parseCall: Parses function calls
+func (p *Parser) parseCall() ast.Expression {
+	expr := p.parsePrimary()
+	if expr == nil {
+		return nil
+	}
+
+	for {
+		if p.match(lexing.LEFT_PAREN) {
+			expr = p.finishCall(expr)
+			if expr == nil {
+				return nil
+			}
+		} else {
+			break
+		}
+	}
+
+	return expr
+}
+
+// finishCall: Parses the arguments of a function call
+func (p *Parser) finishCall(callee ast.Expression) ast.Expression {
+	arguments := make([]ast.Expression, 0)
+
+	if !p.check(lexing.RIGHT_PAREN) {
+		for {
+			arg := p.parseExpression()
+			if arg == nil {
+				return nil
+			}
+			arguments = append(arguments, arg)
+
+			if !p.match(lexing.COMMA) {
+				break
+			}
+		}
+	}
+
+	p.consume(lexing.RIGHT_PAREN, "Expected closing parenthesis")
+	return expression.NewCallExpression(callee, arguments, p.previous().Location)
+}
+
+// parsePrimary: Parses primary expressions (literals, identifiers, and parentheses)
 func (p *Parser) parsePrimary() ast.Expression {
 	token := p.peek()
 
@@ -262,6 +361,20 @@ func (p *Parser) parsePrimary() ast.Expression {
 		}
 		return expression.NewLiteralExpression(value, token.Location)
 
+	case lexing.FLOAT:
+		p.advance()
+		// Convert string to float
+		value, err := strconv.ParseFloat(token.Literal, 64)
+		if err != nil {
+			p.errorAtToken(token, "Invalid float literal")
+			return nil
+		}
+		return expression.NewLiteralExpression(value, token.Location)
+
+	case lexing.IDENTIFIER:
+		p.advance()
+		return expression.NewIdentifierExpression(token.Literal, token.Location)
+
 	case lexing.KEYWORD:
 		if token.Literal == "true" || token.Literal == "false" {
 			p.advance()
@@ -270,6 +383,18 @@ func (p *Parser) parsePrimary() ast.Expression {
 			p.advance()
 			return expression.NewLiteralExpression(nil, token.Location)
 		}
+
+	case lexing.LEFT_PAREN:
+		p.advance()
+		expr := p.parseExpression()
+		if expr == nil {
+			return nil
+		}
+		if !p.match(lexing.RIGHT_PAREN) {
+			p.errorAtToken(p.peek(), "Expected closing parenthesis")
+			return nil
+		}
+		return expr
 	}
 
 	p.errorAtToken(token, "Expected expression")

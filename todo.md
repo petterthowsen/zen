@@ -30,16 +30,16 @@
   - [x] Integer literals
   - [x] Boolean literals
   - [x] Null literal
-  - [ ] Float literals
-- [ ] Binary expressions
-  - [ ] Arithmetic operators (+, -, *, /, %)
+  - [x] Float literals
+- [x] Binary expressions
+  - [x] Arithmetic operators (+, -, *, /, %)
   - [ ] Comparison operators (==, !=, <, >, <=, >=)
   - [ ] Logical operators (and, or)
-- [ ] Unary expressions
-  - [ ] Negation (-)
-  - [ ] Not (!)
+- [x] Unary expressions
+  - [x] Negation (-)
+  - [x] Not (not)
 - [ ] Member access (obj.prop)
-- [ ] Function calls
+- [x] Function calls
 - [ ] Array literals and access
 - [ ] Map literals and access
 - [ ] Lambda expressions
@@ -67,6 +67,6 @@
 - [ ] Function declaration tests
 - [ ] Class declaration tests
 - [ ] Interface declaration tests
-- [ ] Expression tests
+- [x] Expression tests
 - [ ] Error recovery tests
 - [ ] Edge case tests

@@ -73,8 +73,12 @@ func (l *Lexer) Scan() ([]Token, error) {
 			l.scanSequence("/=", DIVIDE_ASSIGN)
 		case string(ch) == "+":
 			l.ConsumeToken(PLUS)
-		case l.isSequence("-"):
-			l.scanSequence("-", MINUS)
+		case string(ch) == "-":
+			l.ConsumeToken(MINUS)
+		case string(ch) == "*":
+			l.ConsumeToken(MULTIPLY)
+		case string(ch) == "/":
+			l.ConsumeToken(DIVIDE)
 		case l.isSequence("=="):
 			l.scanSequence("==", EQUALS)
 		case l.isSequence("!="):
@@ -203,16 +207,17 @@ func (l *Lexer) scanNumber() Token {
 	// check if it contains a .
 	if strings.Contains(text, ".") {
 		return Token{
-			Type:    FLOAT,
-			Literal: text,
+			Type:     FLOAT,
+			Literal:  text,
+			Location: l.SourceCode.GetLocation(l.Line, l.Column),
 		}
 	} else {
 		return Token{
-			Type:    INT,
-			Literal: text,
+			Type:     INT,
+			Literal:  text,
+			Location: l.SourceCode.GetLocation(l.Line, l.Column),
 		}
 	}
-
 }
 
 // scanIdentifierOrKeyword scans a sequence starting with a letter,
@@ -230,13 +235,15 @@ func (l *Lexer) scanIdentifierOrKeyword() Token {
 	// keyword or identifier?
 	if IsKeyword(text) {
 		return Token{
-			Type:    KEYWORD,
-			Literal: text,
+			Type:     KEYWORD,
+			Literal:  text,
+			Location: l.SourceCode.GetLocation(l.Line, l.Column),
 		}
 	} else {
 		return Token{
-			Type:    IDENTIFIER,
-			Literal: l.SourceCode.GetText()[start:l.Index],
+			Type:     IDENTIFIER,
+			Literal:  text,
+			Location: l.SourceCode.GetLocation(l.Line, l.Column),
 		}
 	}
 }
@@ -333,8 +340,9 @@ func (l *Lexer) ConsumeAllExcept(character rune) {
 // ConsumeToken consumes the character and creates a new Token.
 func (l *Lexer) ConsumeToken(tokenType TokenType) {
 	l.tokens = append(l.tokens, Token{
-		Type:    tokenType,
-		Literal: string(l.Peek()),
+		Type:     tokenType,
+		Literal:  string(l.Peek()),
+		Location: l.SourceCode.GetLocation(l.Line, l.Column),
 	})
 	l.Consume()
 }
