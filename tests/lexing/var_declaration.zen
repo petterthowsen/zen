@@ -1,0 +1,25 @@
+// Basic variable declarations
+var name = "zen"
+var age = 25
+var price = 19.99
+var enabled = true
+
+// Type annotations
+var count:int = 0
+var message:string = "hello"
+var rate:float = 0.5
+var valid:bool = false
+
+// Nullable types
+var optional:string?
+var maybe:int? = 42
+
+// Array types
+var numbers:Array<int, 3> = [1, 2, 3]
+var dynamic:Array<string, ?> = ["a", "b", "c"]
+
+// Map types
+var config:Map<string, any> = {
+    "debug": true
+    "port": 8080
+}

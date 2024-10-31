@@ -110,8 +110,10 @@ var keywords = []string{
 	"else",
 
 	"for",
+	"in",
 	"while",
 	"when",
+	"where",
 	"break",
 	"continue",
 
@@ -119,6 +121,9 @@ var keywords = []string{
 
 	"func",
 	"class",
+	"interface",
+	"implements",
+	"extends",
 	"new",
 	"this",
 	"super",
@@ -147,6 +152,11 @@ func NewToken(tokenType TokenType, literal string, sourceLocation *common.Source
 // Name returns the name of the token type
 func (t *Token) Name() string {
 	return tokenTypeNames[t.Type]
+}
+
+// TokenName returns the string name of the token type
+func TokenName(t TokenType) string {
+	return tokenTypeNames[t]
 }
 
 // String returns the string representation of the Token.

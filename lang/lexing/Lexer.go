@@ -51,6 +51,8 @@ func (l *Lexer) Scan() ([]Token, error) {
 			}
 			l.tokens = append(l.tokens, eofToken)
 			l.Consume()
+		case string(ch) == "/" && string(l.Next()) == "/":
+			l.ConsumeAllExcept('\n')
 		case string(ch) == "\"":
 			l.tokens = append(l.tokens, l.scanString())
 		case unicode.IsLetter(ch):
@@ -69,6 +71,10 @@ func (l *Lexer) Scan() ([]Token, error) {
 			l.scanSequence("*=", MULTIPLY_ASSIGN)
 		case l.isSequence("/="):
 			l.scanSequence("/=", DIVIDE_ASSIGN)
+		case string(ch) == "+":
+			l.ConsumeToken(PLUS)
+		case l.isSequence("-"):
+			l.scanSequence("-", MINUS)
 		case l.isSequence("=="):
 			l.scanSequence("==", EQUALS)
 		case l.isSequence("!="):
@@ -102,7 +108,7 @@ func (l *Lexer) Scan() ([]Token, error) {
 		case string(ch) == ".":
 			l.ConsumeToken(DOT)
 		case string(ch) == "=":
-			l.ConsumeToken(EQUALS)
+			l.ConsumeToken(ASSIGN)
 		case string(ch) == "?":
 			l.ConsumeToken(QMARK)
 		case unicode.IsSpace(ch):
@@ -194,10 +200,19 @@ func (l *Lexer) scanNumber() Token {
 
 	text := l.SourceCode.GetText()[start:l.Index]
 
-	return Token{
-		Type:    INT,
-		Literal: text,
+	// check if it contains a .
+	if strings.Contains(text, ".") {
+		return Token{
+			Type:    FLOAT,
+			Literal: text,
+		}
+	} else {
+		return Token{
+			Type:    INT,
+			Literal: text,
+		}
 	}
+
 }
 
 // scanIdentifierOrKeyword scans a sequence starting with a letter,
@@ -227,8 +242,6 @@ func (l *Lexer) scanIdentifierOrKeyword() Token {
 }
 
 func (l *Lexer) scanSequence(sequence string, tokenType TokenType) {
-	seq := "++"
-
 	for i := 0; i < len(sequence); i++ {
 		if l.Peek() != rune(sequence[i]) {
 			l.addError("scanSequence failed: " + sequence)
@@ -238,10 +251,9 @@ func (l *Lexer) scanSequence(sequence string, tokenType TokenType) {
 
 	l.tokens = append(l.tokens, Token{
 		Type:     tokenType,
-		Literal:  seq,
+		Literal:  sequence,
 		Location: l.SourceCode.GetLocation(l.Line, l.Column),
 	})
-	l.consumeSequence(seq)
 }
 
 // Peek returns the current rune at the lexer's index without advancing the position.

@@ -1,0 +1,47 @@
+program        = { declaration } ;
+declaration    = varDecl | funcDecl | classDecl | statement ;
+
+varDecl        = "var" IDENTIFIER [ ":" type ] [ "=" expression ] ;
+funcDecl       = "func" IDENTIFIER "(" [ parameters ] ")" [ ":" type ] block ;
+classDecl      = "class" IDENTIFIER [ "implements" IDENTIFIER { "," IDENTIFIER } ] classBody ;
+
+statement      = exprStmt | ifStmt | forStmt | whileStmt | matchStmt | returnStmt | block ;
+exprStmt       = expression ;
+ifStmt         = "if" expression block [ "else" (ifStmt | block) ] ;
+forStmt        = "for" ( rangeLoop | traditionalLoop | whereLoop ) block ;
+whileStmt      = "while" expression block ;
+matchStmt      = "match" expression "{" { matchCase } [ "else" block ] "}" ;
+returnStmt     = "return" [ expression ] ;
+
+rangeLoop      = IDENTIFIER "in" expression [ "where" expression ] ;
+traditionalLoop = varDecl expression expression ;
+whereLoop      = IDENTIFIER "in" expression "where" expression ;
+
+expression     = assignment ;
+assignment     = IDENTIFIER "=" assignment | logicalOr ;
+logicalOr      = logicalAnd { "or" logicalAnd } ;
+logicalAnd     = equality { "and" equality } ;
+equality       = comparison { ("==" | "!=") comparison } ;
+comparison     = term { ("<" | "<=" | ">" | ">=") term } ;
+term           = factor { ("+" | "-") factor } ;
+factor         = unary { ("*" | "/" | "%") unary } ;
+unary          = ("!" | "-") unary | primary ;
+primary        = NUMBER | STRING | "true" | "false" | "null" 
+               | IDENTIFIER | arrayLiteral | mapLiteral | tupleExpr
+               | "(" expression ")" ;
+
+type           = simpleType | arrayType | mapType | nullableType ;
+simpleType     = IDENTIFIER ;
+arrayType      = "Array" "<" type "," (NUMBER | "?") ">" ;
+mapType        = "Map" "<" type "," type ">" ;
+nullableType   = type "?" ;
+
+arrayLiteral   = "[" [ expression { "," expression } ] "]" ;
+mapLiteral     = "{" [ mapPair { "," mapPair } ] "}" ;
+mapPair        = (STRING | IDENTIFIER) ":" expression ;
+tupleExpr      = "(" expression { "," expression } ")" ;
+
+block          = "{" { statement } "}" ;
+parameters     = parameter { "," parameter } ;
+parameter      = IDENTIFIER ":" type [ "?" ] ;
+matchCase      = (literal | rangeExpr | typeExpr) block ;

@@ -1,0 +1,60 @@
+// If statements
+if x > 0 {
+    print("positive")
+} else if x < 0 {
+    print("negative")
+} else {
+    print("zero")
+}
+
+// While loop
+while count > 0 {
+    count--
+}
+
+// Traditional for loop
+for var i = 0; i < 10; i++ {
+    print(i)
+}
+
+// Range-based for loop
+for number in [1, 5, 7] {
+    print(number)
+}
+
+// For loop with index
+for index, value in items {
+    print(index)
+    print(value)
+}
+
+// For loop with where clause
+for article in articles where article.views > 100 {
+    print(article.title)
+}
+
+// When (match) statement
+when value {
+    "john" {
+        print("name is john!")
+    }
+    "jane" {
+        print("name is jane!")
+    }
+    else {
+        print("unknown name")
+    }
+}
+
+// Match with range
+when age {
+    < 13 {
+        print("child")
+    }
+    < 20 {
+        print("teenager")
+    }
+    else {
+        print("adult")
+    }
+}

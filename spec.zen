@@ -1,0 +1,597 @@
+// this is a single-line comment
+
+/*
+This is a
+multi-line
+comment
+*/
+
+//---------------//
+// Variables and Primitive Types
+//---------------//
+
+// mutable variables can be declared (and assigned an initial value) using 'var' and the assignment operator (=):
+var name = "zen"
+
+
+// immutable variables can be declared using 'const':
+const awesome = true
+
+// zen is strictly typed: all variables an constants must have a defined type - except for the 'any' type.
+// however, this is often not needed when declaring and assigning a value - the initial value infers the type.
+// so name is a string type and awesome is a bool type.
+
+// to declare the type explicitly, use colon and the type.
+var title:string = "Welcome to Zen"
+
+// it is recommended to always specify the type for readability.
+// also: string literals are written with double-quotes only. This is to help support consistency.
+
+// to declare a untyped variable:
+var anything:any
+
+// it can of course also be nullable
+var anything:any?
+
+// here's a nullable string:
+var subtitle:string?
+
+// subtitle is now declared but not assigned to any value.
+subtitle = "and now it has a value"
+
+// since it's nullable, we can set it to null again
+subtitle = null
+
+// there are other datatypes besides strings of course:
+var price = 0.5 // creates a float (an unsigned 32 bit decimal number)
+
+var coins = 10 // creates an integer (an unsigned 32 bit integer number)
+
+// to create 64 bit floats or integers, float64 and int64 can be used:
+var distance:float64 = 12345678.9
+var num_planets:int64 = 123456789
+
+// the basic operators + - * and / are available of course.
+coins = coins + 1
+
+// as well as +=, -=, /=, and *=
+coins += 1
+
+// there's also increment and decrement operators ++ and --:
+coins++ // equivalent to coins = coins + 1
+coins-- // equivalent to coins = coins - 1
+
+
+//---------------//
+// Conditional Statements
+//---------------//
+// to control logic flow using conditional statements, Zen has standard if, else if, else statements:
+if coins > 10 {
+    print("lots of coins!")
+}else if coins >= 5 {
+    print("few coins")
+}else if coins == 0 {
+    print("no coins!")
+}else {
+    print("We're in debt!")
+}
+
+// logical and:
+if coins > 10 and hungry {
+    buyFood()
+}
+
+// logical 'or' and 'not' as inversion
+if coins < 5 or not hungry {
+    print("not buying food")
+}
+
+
+
+//---------------//
+// Collections: Arrays
+//---------------//
+// to declare an array, use Array<TYPE, SIZE> where type can be "int", "string" etc. or "any" for mixed types.
+var fixedArray: Array<int, 3> = [1, 2, 3]       // Fixed-size array
+var dynamicArray: Array<int, ?> = [1, 2, 3]     // Dynamic-size array
+var nullableArray: Array<int, 3>?               // Nullable fixed-size array
+
+// if you don't specify the type, zen will assume you want a dynamic size array of type "any":
+var names = ["John", "Jane", "Dave"] // type = Array<string, ?>
+
+// elements of arrays can be accessed by their index (arrays indices start at 0):
+names[0] // "John"
+
+// you can also change the value of any element
+names[1] = "Janette"
+
+// arrays are objects and have useful properties:
+
+names.first // "John"
+
+names.last // "Dave"
+
+names.length // 2
+
+// ... and methods:
+names.reverse() // reverses/flips the order of the array
+names.slice(1, 2) // ["Janette", "Dave"]
+
+
+
+//---------------//
+// Collections: Maps
+//---------------//
+// While arrays are useful to store ordered lists of items, maps can associate keys or "names" to many items.
+// Maps are similar to Dictionaries, JSON etc.
+// Maps have dynamic size.
+
+// to declare a map of string to any for example:
+var config : Map<string, any>? // nullable map where keys map to any type.
+var ages : Map<string, int> // initialized as an empty map
+
+// you can initialize a map with a "map literal", which uses curly braces:
+config = {
+    "volume": 0.5
+    "dark_mode": true
+}
+
+// commas are required when declared on one line:
+config = {"volume": 0.5, "dark_mode": true}
+
+
+// like arrays, they are useful properties and methods:
+config.size // 2
+
+config.has("volume") // true
+config.volume // 0.5
+
+config["dark_mode"] // true
+
+
+
+//---------------//
+// Collections: Tuples
+//---------------//
+// Tuples are similar to an array but simpler: they are ordered, have fixed size and are immutable.
+// to create a tuple, simply use parenthesis
+var tuple = ("John", 40)
+
+// tuples are useful for functions that return multiple values, for example if a function returns the above tuple:
+var name, age = get_person_info(person)
+
+print(name) // "John"
+print(age) // 40
+
+
+
+//---------------//
+// Collections: Extending
+//---------------//
+// The Array and Map collection types are two special classes that provide a special type (Array<T, S>) and access (my_array[index])
+// These can be extended like any other class to create custom collection behavior.
+class CustomArray<T> implements Array<T> {
+    
+}
+
+
+
+//---------------//
+// Loops
+//---------------//
+// Zen provides the traditional for loop:
+
+for var i = 0; i < 10; i++ {
+    print(i)
+}
+// prints 0123456789
+
+// and the standard while loop, which runs every time the condition is true
+while true {
+    // infinite loop!
+}
+
+// and we can iterate through collections, for example this array:
+for number in [1, 5, 7] {
+    print(number)
+}
+
+// when looping through an array using a single variable for each element ("number in this case)
+// number gets assigned the *value* of the element (1, 5 and 7)
+
+// however, if you specify two variables, you can get the index too:
+for index, number in [1, 5, 7] {
+    print("index " + string(index) + " is number " + string(number))
+}
+
+// Looping through ranges
+// you can also loop through any range of numbers (up to but not including the last number):
+for number in 1 {
+    print(number)
+}
+// this prints 0
+
+// if you want to specify the starting number:
+for i in 3..5 {
+    print(i)
+}
+// this prints 3, then 4 (in the terminal it would look like "34" though)
+
+
+// inside a for loop is a special 'loop' variable which contains useful properties:
+for name in ["john", "jane", "dave"] {
+    if loop.first {
+        print("Names: ")
+    }
+    print(name)
+    if not loop.last {
+        print(", ")
+    }
+}
+// this would print "Names: john, jane, dave"
+
+// There's also loop.first which is true for the first element
+
+// an iteration can be skipped by using 'continue' and you can exit the loop using 'break'
+
+
+// of course, maps can also be iterated on:
+var weather : Map<string, int> = {
+    "Tokyo": 18,
+    "Florida": 28
+}
+
+for place, degrees in weather {
+    print("It's " + string(degrees) + " in " + place)
+}
+
+// "for in" loops can optionally have one or more conditions right in the for statement for simplicity
+for article in articles where article.views > 100 {
+    // do something with popular articles
+}
+
+//---------------//
+// Match
+//---------------//
+// Zen features a powerful match statement that allows matching on values, ranges, types, and patterns:
+
+var name = "john"
+match name {
+    "john" {
+        print("name is john!")
+    }
+    "jane" {
+        print("name is jane!")
+    }
+    else {
+        print("unknown name")
+    }
+}
+
+// Range matching
+var age = 25
+match age {
+    0..12 {
+        print("child")
+    }
+    13..19 {
+        print("teenager")
+    }
+    20..64 {
+        print("adult")
+    }
+    else {
+        print("senior")
+    }
+}
+
+// Destructuring in match statements
+var person = ("john", 30)
+match person {
+    ("john", age) {
+        print("John is " + age + " years old")
+    }
+    ("jane", _) {
+        print("It’s Jane!")
+    }
+    else {
+        print("unknown person")
+    }
+}
+
+// Type-based matching
+var data: Any = 42
+match typeof data {
+    int {
+        print("It's an integer!")
+    }
+    string {
+        print("It's a string!")
+    }
+    else {
+        print("Unknown type")
+    }
+}
+
+// Combining conditions in match statements
+match name {
+    "john", "jane" {
+        print("Hello, friend!")
+    }
+    name.length > 5 {
+        print("Long name!")
+    }
+    else {
+        print("Unknown or short name")
+    }
+}
+
+
+
+
+//---------------//
+// Functions
+//---------------//
+
+// functions are declared using the 'func' keyword followed by a name, arguments in parenthesis and a code block using curly braces:
+func say_hi() {
+    print("hi")
+}
+
+// functions can take arguments and can also return values
+func say_hi(name:string): string {
+    return "Hi, " + name
+}
+
+// calling a function:
+say_hi("John") // returns the string "Hi, John"
+
+// function arguments can be made "optional" by using a nullable type:
+func say_hi(name:string, suffix:string?) {
+    str = "Hi, " name
+    if suffix {
+        str += suffix
+    }
+    return str
+}
+
+// Variadic functions
+// Functions can take a flexible number of arguments with the variadic syntax:
+func sum(numbers: int...) : int {
+    var total = 0
+    for (num in numbers) {
+        total += num
+    }
+    return total
+}
+
+var result = sum(1, 2, 3, 4)  // result is 10
+
+// You can also use the spread operator to pass an existing array as variadic arguments
+var nums = [5, 10, 15]
+var total = sum(...nums)  // Expands nums array into individual arguments, total is 30
+
+// if you have a map where keys are strings, you can unpack them to local variables
+var person = {
+    "name": "John",
+    "email": "john@example.com"
+}
+
+unpack(person)
+//this is equivalent to to:
+//var name = person.name
+//var email = person.email
+
+//---------------//
+// Lambdas and Closures
+//---------------//
+
+// Zen supports lambdas, which are inline, anonymous functions that can capture variables from the surrounding scope (making them closures).
+
+// Lambda syntax uses { parameters -> expression } for concise inline functions:
+var double = { x -> x * 2 }
+print(double(5))  // Outputs 10
+
+// Lambdas can capture variables from their surrounding scope:
+func make_counter(start: int): func(): int {
+    var count = start
+    return { -> count += 1 }  // Lambda captures `count` as a closure
+}
+
+var counter = make_counter(10)
+print(counter())  // Outputs 11
+print(counter())  // Outputs 12
+
+// Lambdas support type inference and multi-line syntax:
+// Multi-line lambda with { ... } braces for complex logic
+var complex_op = { x, y ->
+    var result = x * y
+    result += 10
+    return result
+}
+
+print(complex_op(2, 3))  // Outputs 16
+
+// Lambdas can also be assigned to function types:
+var op: func(int, int): int = { a, b -> a + b }
+print(op(3, 4))  // Outputs 7
+
+
+
+//---------------//
+// Classes
+//---------------//
+// Zen provides classes and interfaces to support object-oriented programming
+
+// the simplest class is:
+class Person {}
+
+// to create an instance of Person
+var p = new Person()
+
+//---------------//
+// Constructors
+//---------------//
+
+// Zen supports inferred and custom constructors. Properties declared in a class automatically generate an inferred constructor.
+// If a custom constructor is provided, it overrides the inferred constructor. Multiple constructors are supported, but all auxiliary
+// constructors must go through a primary constructor to ensure consistent initialization logic.
+
+// Example with an inferred constructor:
+class Person {
+    name: string
+}
+var person = Person("Alice")  // Automatically creates a Person with name = "Alice"
+
+// Example with a primary and auxiliary constructors
+class Person {
+    name: string
+    age: int
+
+    // Primary constructor: core initialization logic is here
+    func init(name: string, age: int) {
+        this.name = name.capitalized()
+        this.age = age
+    }
+
+    // Auxiliary constructor 1: uses default age, calls primary constructor
+    func init(name: string) {
+        this.init(name, 0)  // Default age of 0
+    }
+
+    // Auxiliary constructor 2: uses default name and age, calls auxiliary constructor 1
+    func init() {
+        this.init("Unknown")  // Default name of "Unknown" and age of 0
+    }
+}
+
+// Using the constructors
+var person1 = Person("Alice", 30)   // Calls primary constructor
+var person2 = Person("Bob")         // Calls auxiliary constructor 1
+var person3 = Person()              // Calls auxiliary constructor 2
+
+
+
+//---------------//
+// Interface
+//---------------//
+// interfaces allow you to declare a class structure but not the implementation
+// allowing for modular code with different kinds of implementations
+// For example, a File System may have a read and write method.
+class FileSystemInterface {
+    read(file:string): string
+    write(file:string, contents:string): void
+}
+
+// an implementations of a FileSystemInterface can be defined like so:
+import FileSystemInterface from "filesystem"
+
+class LocalFileSystem implements FileSystemInterface {
+    read(file:string): string {
+        var file = fs.open(file)
+        var string = file.string()
+        file.close()
+        return string
+    }
+
+    write(file:string, contents:string):void {
+        var file = fs.open(file)
+        fs.write(contents)
+        fs.close(file)
+    }
+}
+
+
+
+//---------------//
+// Interface Checking
+//---------------//
+
+// Zen supports both explicit and structural interface checks using the `is` and `has` keywords for flexibility:
+
+interface Drawable {
+    func draw(): void
+    var position: Vector2
+}
+
+class Circle {
+    func draw() {
+        print("Drawing a circle")
+    }
+
+    var position: Vector2 = Vector2(0, 0)
+}
+
+var shape = Circle()
+
+// `is` keyword for explicit interface implementation
+if shape is Drawable {
+    print("shape explicitly implements Drawable")
+    shape.draw()
+    print(shape.position)
+}
+
+// `has` keyword for structural interface checking
+// Full structural check: checks if shape has all properties and methods of Drawable
+if shape has Drawable {
+    print("shape structurally matches Drawable")
+    shape.draw()
+    print(shape.position)
+}
+
+// Partial structural check: only checks specific methods or properties
+if shape has Drawable.draw {
+    shape.draw()
+}
+
+if shape has position: Vector2 {
+    print("Position is " + shape.position.to_string())
+}
+
+
+
+//-----------------------------------//
+// Namespaces, Packages, and Imports
+//-----------------------------------//
+// Zen organizes code into namespaces based on folder structure.
+// - Folders are namespaces.
+// - Each file in a given namespace are "modules".
+// - Modules can define one or more symbols (functions, classes etc.) 
+
+// Zen projects define their root namespace through a `package.zen` file, setting the root for all project imports.
+
+// Importing Entire Namespaces
+// By default, importing a namespace (e.g., a package root) brings all symbols within that namespace into scope under the namespace prefix.
+
+// Example:
+import sys       // Imports the `sys` namespace, making all symbols accessible via `sys.<symbol>`
+sys.sleep(1000) // Calls `sleep` function from `sys` namespace
+
+// Specific Module or Symbol Import
+// Importing a specific module or symbol within a namespace brings it directly into scope without the prefix. This is useful for frequently used functions or classes.
+
+// Example:
+import sys.sleep       // Imports only `sleep` function from `sys` without prefix
+sleep(1000)            // Calls `sleep` directly without `sys` prefix
+
+// Importing Classes, Functions, or Specific Symbols
+// Zen allows importing specific classes or functions directly, making them available by name without requiring the namespace prefix.
+
+// Example:
+import math.basic.add  // Imports `add` function directly from `math.basic`
+var result = add(5, 10)
+
+// Import with Alias
+// Use an alias to rename namespaces, modules, or symbols as needed for clarity or to avoid conflicts.
+
+import math.basic as basicMath  // Aliases `basic` module within `math` namespace to `basicMath`
+import sys as system            // Aliases `sys` namespace to `system`
+system.sleep(500)
+
+// Including Files Directly
+// Zen's `include` function allows files to be included directly, either as code within scope or as a structured data return if a `return` statement is present.
+const config = include("config.zen")  // Loads return value from config.zen, such as {"key": "value"}
+
+// File Return Values and Structured Data Support
+// Files with `return` statements can return structured data, and `include` supports various data formats like JSON directly.
+const settings = include("settings.json")  // Loads JSON as a structured map
