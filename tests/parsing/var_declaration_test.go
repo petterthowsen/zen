@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"zen/lang/parsing/statement"
 )
 
 func TestVarDeclarationFile(t *testing.T) {
@@ -36,12 +37,56 @@ func TestVarDeclarationFile(t *testing.T) {
 	}
 
 	// Verify basic structure
-	if len(program.Statements) == 0 {
-		t.Error("Expected statements in program, got none")
+	expectedDecls := []struct {
+		name     string
+		typ      string
+		isConst  bool
+		nullable bool
+	}{
+		{"name", "", false, false},
+		{"age", "", false, false},
+		{"isValid", "", false, false},
+		{"title", "string", false, false},
+		{"count", "int", false, false},
+		{"enabled", "bool", false, false},
+		{"description", "string", false, true},
+		{"quantity", "int", false, true},
+	}
+
+	if len(program.Statements) != len(expectedDecls) {
+		t.Errorf("Expected %d declarations, got %d", len(expectedDecls), len(program.Statements))
 		return
 	}
 
-	// TODO: Add more specific AST structure verification
+	for i, exp := range expectedDecls {
+		stmt := program.Statements[i]
+		t.Logf("Checking declaration %d: %s", i, stmt.String(0))
+
+		// Type assert to VarDeclarationNode
+		varDecl, ok := stmt.(*statement.VarDeclarationNode)
+		if !ok {
+			t.Errorf("Statement %d: expected VarDeclarationNode, got %T", i, stmt)
+			continue
+		}
+
+		if varDecl.Name != exp.name {
+			t.Errorf("Declaration %d: expected name %q, got %q", i, exp.name, varDecl.Name)
+		}
+
+		expectedType := exp.typ
+		if exp.nullable {
+			expectedType += "?"
+		}
+		if varDecl.Type != expectedType {
+			t.Errorf("Declaration %d: expected type %q, got %q", i, expectedType, varDecl.Type)
+		}
+
+		if varDecl.IsConstant != exp.isConst {
+			t.Errorf("Declaration %d: expected const=%v, got %v", i, exp.isConst, varDecl.IsConstant)
+		}
+
+		// TODO: Add initializer checks once expression parsing is implemented
+	}
 }
 
 func TestParserError(t *testing.T) {
@@ -49,7 +94,7 @@ func TestParserError(t *testing.T) {
 	if len(errors) == 0 {
 		t.Error("Expected parsing error, got none")
 	}
-	if program != nil && len(program.Statements) > 0 {
-		t.Error("Expected no statements for error case")
+	if program != nil {
+		t.Error("Expected nil program for error case")
 	}
 }
