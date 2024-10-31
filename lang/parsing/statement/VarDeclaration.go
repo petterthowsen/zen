@@ -13,6 +13,7 @@ type VarDeclarationNode struct {
 	Type        string // Optional type annotation
 	Initializer ast.Expression
 	IsConstant  bool
+	IsNullable  bool
 	Location    *common.SourceLocation
 }
 
@@ -21,6 +22,7 @@ func NewVarDeclarationNode(
 	typ string,
 	initializer ast.Expression,
 	isConstant bool,
+	isNullable bool,
 	location *common.SourceLocation,
 ) *VarDeclarationNode {
 	return &VarDeclarationNode{
@@ -28,6 +30,7 @@ func NewVarDeclarationNode(
 		Type:        typ,
 		Initializer: initializer,
 		IsConstant:  isConstant,
+		IsNullable:  isNullable,
 		Location:    location,
 	}
 }

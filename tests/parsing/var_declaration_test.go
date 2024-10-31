@@ -73,16 +73,16 @@ func TestVarDeclarationFile(t *testing.T) {
 			t.Errorf("Declaration %d: expected name %q, got %q", i, exp.name, varDecl.Name)
 		}
 
-		expectedType := exp.typ
-		if exp.nullable {
-			expectedType += "?"
-		}
-		if varDecl.Type != expectedType {
-			t.Errorf("Declaration %d: expected type %q, got %q", i, expectedType, varDecl.Type)
+		if varDecl.Type != exp.typ {
+			t.Errorf("Declaration %d: expected type %q, got %q", i, exp.typ, varDecl.Type)
 		}
 
 		if varDecl.IsConstant != exp.isConst {
 			t.Errorf("Declaration %d: expected const=%v, got %v", i, exp.isConst, varDecl.IsConstant)
+		}
+
+		if varDecl.IsNullable != exp.nullable {
+			t.Errorf("Declaration %d: expected nullable=%v, got %v", i, exp.nullable, varDecl.IsNullable)
 		}
 
 		// TODO: Add initializer checks once expression parsing is implemented

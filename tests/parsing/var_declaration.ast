@@ -1,3 +1,38 @@
 Program
   Var Declaration
     Name: name
+    Initializer:
+      Literal: test
+  Var Declaration
+    Name: age
+    Initializer:
+      Literal: 25
+  Var Declaration
+    Name: isValid
+    Initializer:
+      Literal: true
+  Var Declaration
+    Name: title
+    Type: string
+    Initializer:
+      Literal: Hello
+  Var Declaration
+    Name: count
+    Type: int
+    Initializer:
+      Literal: 42
+  Var Declaration
+    Name: enabled
+    Type: bool
+    Initializer:
+      Literal: false
+  Var Declaration
+    Name: description
+    Type: string
+    Initializer:
+      Literal: optional
+  Var Declaration
+    Name: quantity
+    Type: int
+    Initializer:
+      Literal: <nil>

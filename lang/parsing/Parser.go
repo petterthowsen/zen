@@ -1,9 +1,11 @@
 package parsing
 
 import (
+	"strconv"
 	"zen/lang/common"
 	"zen/lang/lexing"
 	"zen/lang/parsing/ast"
+	"zen/lang/parsing/expression"
 	"zen/lang/parsing/statement"
 )
 
@@ -40,37 +42,40 @@ func (p *Parser) Parse() (*ast.ProgramNode, []*common.SyntaxError) {
 	statements := make([]ast.Statement, 0)
 
 	for !p.isAtEnd() {
+		if p.check(lexing.EOF) {
+			break
+		}
+
 		stmt := p.parseStatement()
 		if stmt != nil {
 			statements = append(statements, stmt)
-		}
-
-		// Error recovery: skip until we find a statement boundary
-		if len(p.errors) > 0 && !p.stopAtFirstError {
+		} else if len(p.errors) > 0 && !p.stopAtFirstError {
 			p.synchronize()
 		}
 	}
 
-	// Return nil if we had errors
 	if len(p.errors) > 0 {
 		return nil, p.errors
 	}
 
-	return ast.NewProgramNode(statements), p.errors
+	return ast.NewProgramNode(statements), nil
 }
 
 // synchronize skips tokens until a statement boundary is found
 func (p *Parser) synchronize() {
-	p.advance()
-
 	for !p.isAtEnd() {
-		// Synchronize on statement-starting keywords
+		if p.check(lexing.EOF) {
+			return
+		}
+
+		// If we're at a statement-starting keyword, we can start parsing again
 		if p.checkKeyword("var") || p.checkKeyword("const") ||
 			p.checkKeyword("func") || p.checkKeyword("class") ||
 			p.checkKeyword("if") || p.checkKeyword("for") ||
-			p.checkKeyword("while") || p.checkKeyword("return") {
+			p.checkKeyword("while") || p.checkKeyword("return") || p.checkKeyword("when") {
 			return
 		}
+
 		p.advance()
 	}
 }
@@ -83,7 +88,7 @@ func (p *Parser) isAtEnd() bool {
 // peek returns the current token
 func (p *Parser) peek() lexing.Token {
 	if p.current >= len(p.tokens) {
-		return lexing.Token{} // Return empty token
+		return lexing.Token{Type: lexing.EOF} // Return EOF token
 	}
 	return p.tokens[p.current]
 }
@@ -104,7 +109,7 @@ func (p *Parser) advance() lexing.Token {
 // check returns true if the current token type matches the given TokenType
 func (p *Parser) check(typ lexing.TokenType) bool {
 	if p.isAtEnd() {
-		return false
+		return typ == lexing.EOF
 	}
 	return p.peek().Type == typ
 }
@@ -146,13 +151,24 @@ func (p *Parser) consume(typ lexing.TokenType, message string) lexing.Token {
 		return p.advance()
 	}
 
-	p.error(message)
+	token := p.peek()
+	p.errorAtToken(token, message)
 	return lexing.Token{}
 }
 
 // error adds a SyntaxError to the errors array
 func (p *Parser) error(message string) {
-	err := common.NewSyntaxError(message, p.peek().Location)
+	p.errorAtToken(p.peek(), message)
+}
+
+// errorAtToken adds a SyntaxError at the specified token
+func (p *Parser) errorAtToken(token lexing.Token, message string) {
+	var err *common.SyntaxError
+	if token.Type == lexing.EOF {
+		err = common.NewSyntaxError("Unexpected end of file: "+message, token.Location)
+	} else {
+		err = common.NewSyntaxError("Unexpected '"+token.Literal+"': "+message, token.Location)
+	}
 	p.errors = append(p.errors, err)
 
 	if p.stopAtFirstError {
@@ -166,20 +182,27 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseVarDeclaration()
 	}
 
-	// TODO: Add other statement types
-	p.error("Expected statement")
+	token := p.peek()
+	if token.Type == lexing.EOF {
+		return nil // End of file is not an error
+	}
+
+	p.errorAtToken(token, "Expected statement")
 	return nil
 }
 
 // parseVarDeclaration: Parses a variable declaration
 func (p *Parser) parseVarDeclaration() ast.Statement {
 	isConstant := p.previous().Literal == "const"
+	startToken := p.previous() // Save the 'var' or 'const' token for error reporting
 
 	// Parse variable name
 	name := p.consume(lexing.IDENTIFIER, "Expected variable name")
 	if len(p.errors) > 0 {
 		return nil
 	}
+
+	isNullable := false
 
 	// Parse optional type annotation
 	var varType string
@@ -192,31 +215,63 @@ func (p *Parser) parseVarDeclaration() ast.Statement {
 
 		// Handle nullable type
 		if p.match(lexing.QMARK) {
-			varType += "?"
+			isNullable = true
 		}
 	}
 
-	// Parse initializer
-	p.consume(lexing.ASSIGN, "Expected '=' after variable name")
-	if len(p.errors) > 0 {
-		return nil
-	}
-
-	// TODO: Implement expression parsing
-	// For now, just consume tokens until semicolon
-	for !p.isAtEnd() && !p.check(lexing.SEMICOLON) {
-		p.advance()
-	}
-
-	if !p.isAtEnd() {
-		p.advance() // Consume semicolon
+	// Parse optional initializer
+	var initializer ast.Expression
+	if p.match(lexing.ASSIGN) {
+		initializer = p.parseExpression()
+		if initializer == nil {
+			return nil
+		}
 	}
 
 	return statement.NewVarDeclarationNode(
 		name.Literal,
 		varType,
-		nil, // TODO: Add initializer expression
+		initializer,
 		isConstant,
-		name.Location,
+		isNullable,
+		startToken.Location,
 	)
+}
+
+// parseExpression: Parses an expression
+func (p *Parser) parseExpression() ast.Expression {
+	return p.parsePrimary()
+}
+
+// parsePrimary: Parses primary expressions (literals for now)
+func (p *Parser) parsePrimary() ast.Expression {
+	token := p.peek()
+
+	switch token.Type {
+	case lexing.STRING:
+		p.advance()
+		return expression.NewLiteralExpression(token.Literal, token.Location)
+
+	case lexing.INT:
+		p.advance()
+		// Convert string to int
+		value, err := strconv.ParseInt(token.Literal, 10, 64)
+		if err != nil {
+			p.errorAtToken(token, "Invalid integer literal")
+			return nil
+		}
+		return expression.NewLiteralExpression(value, token.Location)
+
+	case lexing.KEYWORD:
+		if token.Literal == "true" || token.Literal == "false" {
+			p.advance()
+			return expression.NewLiteralExpression(token.Literal == "true", token.Location)
+		} else if token.Literal == "null" {
+			p.advance()
+			return expression.NewLiteralExpression(nil, token.Location)
+		}
+	}
+
+	p.errorAtToken(token, "Expected expression")
+	return nil
 }
