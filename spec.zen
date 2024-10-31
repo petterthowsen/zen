@@ -92,12 +92,18 @@ if coins < 5 or not hungry {
 // Collections: Arrays
 //---------------//
 // to declare an array, use Array<TYPE, SIZE> where type can be "int", "string" etc. or "any" for mixed types.
-var fixedArray: Array<int, 3> = [1, 2, 3]       // Fixed-size array
-var dynamicArray: Array<int, ?> = [1, 2, 3]     // Dynamic-size array
-var nullableArray: Array<int, 3>?               // Nullable fixed-size array
+
+// Here's a fixed size array of ints, holding maximum 3 elements.
+var fixedArray: Array<Int, 3> = [1, 2, 3]
+
+// For dynamically sized arrays, either omit the size parameter:
+var dynamicArray: Array<Int>
+
+// or use a ? for the size parameter:
+var nullableArray: Array<String, ?>               // Nullable fixed-size array
 
 // if you don't specify the type, zen will assume you want a dynamic size array of type "any":
-var names = ["John", "Jane", "Dave"] // type = Array<string, ?>
+var names = ["John", "Jane", "Dave"] // type = Array<any, ?>
 
 // elements of arrays can be accessed by their index (arrays indices start at 0):
 names[0] // "John"
@@ -483,9 +489,6 @@ class FileSystemInterface {
     write(file:string, contents:string): void
 }
 
-// an implementations of a FileSystemInterface can be defined like so:
-import FileSystemInterface from "filesystem"
-
 class LocalFileSystem implements FileSystemInterface {
     read(file:string): string {
         var file = fs.open(file)
@@ -555,43 +558,45 @@ if shape has position: Vector2 {
 //-----------------------------------//
 // Zen organizes code into namespaces based on folder structure.
 // - Folders are namespaces.
-// - Each file in a given namespace are "modules".
+// - Each file in a given namespace are "modules"
 // - Modules can define one or more symbols (functions, classes etc.) 
 
-// Zen projects define their root namespace through a `package.zen` file, setting the root for all project imports.
+// Zen projects define their root namespace through a `package.zen` file.
 
 // Importing Entire Namespaces
-// By default, importing a namespace (e.g., a package root) brings all symbols within that namespace into scope under the namespace prefix.
+// By default, importing a namespace (e.g., a package root) brings all symbols within that namespace into scope.
 
 // Example:
-import sys       // Imports the `sys` namespace, making all symbols accessible via `sys.<symbol>`
-sys.sleep(1000) // Calls `sleep` function from `sys` namespace
+import sys       // Imports the `sys` namespace, making all symbols accessible via `<symbol>`
+sleep(1000) // Calls `sleep` function from `sys` namespace
 
-// Specific Module or Symbol Import
-// Importing a specific module or symbol within a namespace brings it directly into scope without the prefix. This is useful for frequently used functions or classes.
-
-// Example:
-import sys.sleep       // Imports only `sleep` function from `sys` without prefix
-sleep(1000)            // Calls `sleep` directly without `sys` prefix
-
-// Importing Classes, Functions, or Specific Symbols
-// Zen allows importing specific classes or functions directly, making them available by name without requiring the namespace prefix.
+// Specific Symbol Import
+// Importing a specific symbol within a namespace brings it directly into scope without the prefix. This is useful for frequently used functions or classes.
 
 // Example:
-import math.basic.add  // Imports `add` function directly from `math.basic`
-var result = add(5, 10)
+import sys.sleep       // Imports only `sleep` function from `sys`
+sleep(1000)            // Calls `sleep`
 
-// Import with Alias
-// Use an alias to rename namespaces, modules, or symbols as needed for clarity or to avoid conflicts.
+// Import alias
+// To avoid conflicts, one can import either whole namespaces or specific symbols into any scope
+//assuming gameEngine.core has a Vector2 class:
+import gameEngine as GE
+var vector = GE.core.Vector2(0, 0)
 
-import math.basic as basicMath  // Aliases `basic` module within `math` namespace to `basicMath`
-import sys as system            // Aliases `sys` namespace to `system`
-system.sleep(500)
 
-// Including Files Directly
-// Zen's `include` function allows files to be included directly, either as code within scope or as a structured data return if a `return` statement is present.
+//-----------------------------------//
+// Include
+//-----------------------------------//
+// Zen's `include` function allows files to be included directly, either as code within scope or as a structured data return if a `return` statement is present in the included file.
 const config = include("config.zen")  // Loads return value from config.zen, such as {"key": "value"}
 
 // File Return Values and Structured Data Support
 // Files with `return` statements can return structured data, and `include` supports various data formats like JSON directly.
 const settings = include("settings.json")  // Loads JSON as a structured map
+
+// Include is mainly implemented to support loading of various structured data such as configuration files.
+// However, it's also possible to execute code from another file directly in the current scope.
+// given a file 'myfile.zen' containing "var helloFromMyFile = 5"
+// one can do this:
+include("helloFromMyFile.zen")
+print(helloFromMyFile) // 5

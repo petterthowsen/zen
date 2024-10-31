@@ -1,47 +1,86 @@
-program        = { declaration } ;
-declaration    = varDecl | funcDecl | classDecl | statement ;
+(* Zen Language Grammar in EBNF *)
 
-varDecl        = "var" IDENTIFIER [ ":" type ] [ "=" expression ] ;
-funcDecl       = "func" IDENTIFIER "(" [ parameters ] ")" [ ":" type ] block ;
-classDecl      = "class" IDENTIFIER [ "implements" IDENTIFIER { "," IDENTIFIER } ] classBody ;
+(* Program Structure *)
+Program = { Statement | FunctionDecl | ClassDecl | ImportStmt } ;
 
-statement      = exprStmt | ifStmt | forStmt | whileStmt | matchStmt | returnStmt | block ;
-exprStmt       = expression ;
-ifStmt         = "if" expression block [ "else" (ifStmt | block) ] ;
-forStmt        = "for" ( rangeLoop | traditionalLoop | whereLoop ) block ;
-whileStmt      = "while" expression block ;
-matchStmt      = "match" expression "{" { matchCase } [ "else" block ] "}" ;
-returnStmt     = "return" [ expression ] ;
+(* Basic Elements *)
+Letter = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" |
+         "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z" |
+         "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" |
+         "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" ;
+Digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+Identifier = Letter, { Letter | Digit | "_" } ;
+WhiteSpace = " " | "\t" | "\n" | "\r" ;
+Comment = SingleLineComment | MultiLineComment ;
+SingleLineComment = "//", { ? any character except newline ? } ;
 
-rangeLoop      = IDENTIFIER "in" expression [ "where" expression ] ;
-traditionalLoop = varDecl expression expression ;
-whereLoop      = IDENTIFIER "in" expression "where" expression ;
+(* Types *)
+Type = SimpleType | ArrayType | MapType | NullableType ;
+SimpleType = "int" | "int64" | "float" | "float64" | "string" | "bool" | "any" | Identifier ;
+ArrayType = "Array", "<", Type, [ ",", Size ], ">" ;
+MapType = "Map", "<", Type, ",", Type, ">" ;
+NullableType = Type, "?" ;
+Size = Number | "?" ;
 
-expression     = assignment ;
-assignment     = IDENTIFIER "=" assignment | logicalOr ;
-logicalOr      = logicalAnd { "or" logicalAnd } ;
-logicalAnd     = equality { "and" equality } ;
-equality       = comparison { ("==" | "!=") comparison } ;
-comparison     = term { ("<" | "<=" | ">" | ">=") term } ;
-term           = factor { ("+" | "-") factor } ;
-factor         = unary { ("*" | "/" | "%") unary } ;
-unary          = ("!" | "-") unary | primary ;
-primary        = NUMBER | STRING | "true" | "false" | "null" 
-               | IDENTIFIER | arrayLiteral | mapLiteral | tupleExpr
-               | "(" expression ")" ;
+(* Literals *)
+Literal = NumberLiteral | StringLiteral | BooleanLiteral | NullLiteral | ArrayLiteral | MapLiteral | TupleLiteral ;
+NumberLiteral = IntegerLiteral | FloatLiteral ;
+IntegerLiteral = Digit, { Digit } ;
+FloatLiteral = IntegerLiteral, ".", IntegerLiteral ;
+StringLiteral = '"', { ? any character except " ? }, '"' ;
+BooleanLiteral = "true" | "false" ;
+NullLiteral = "null" ;
+ArrayLiteral = "[", [ Expression, { ",", Expression } ], "]" ;
+MapLiteral = "{", [ MapEntry, { ",", MapEntry } ], "}" ;
+MapEntry = StringLiteral, ":", Expression ;
+TupleLiteral = "(", Expression, { ",", Expression }, ")" ;
 
-type           = simpleType | arrayType | mapType | nullableType ;
-simpleType     = IDENTIFIER ;
-arrayType      = "Array" "<" type "," (NUMBER | "?") ">" ;
-mapType        = "Map" "<" type "," type ">" ;
-nullableType   = type "?" ;
+(* Variables *)
+VarDecl = ("var" | "const"), Identifier, [ ":", Type ], "=", Expression ;
+Assignment = (Identifier | MemberAccess | ArrayAccess), AssignmentOp, Expression ;
+AssignmentOp = "=" | "+=" | "-=" | "*=" | "/=" ;
 
-arrayLiteral   = "[" [ expression { "," expression } ] "]" ;
-mapLiteral     = "{" [ mapPair { "," mapPair } ] "}" ;
-mapPair        = (STRING | IDENTIFIER) ":" expression ;
-tupleExpr      = "(" expression { "," expression } ")" ;
+(* Expressions *)
+Expression = UnaryExpr | BinaryExpr | Literal | Identifier | FunctionCall | MemberAccess | ArrayAccess | Lambda ;
+UnaryExpr = UnaryOp, Expression ;
+UnaryOp = "-" | "!" | "not" ;
+BinaryExpr = Expression, BinaryOp, Expression ;
+BinaryOp = "+" | "-" | "*" | "/" | "==" | "!=" | "<" | "<=" | ">" | ">=" | "and" | "or" ;
+MemberAccess = Expression, ".", Identifier ;
+ArrayAccess = Expression, "[", Expression, "]" ;
 
-block          = "{" { statement } "}" ;
-parameters     = parameter { "," parameter } ;
-parameter      = IDENTIFIER ":" type [ "?" ] ;
-matchCase      = (literal | rangeExpr | typeExpr) block ;
+(* Control Flow *)
+IfStmt = "if", Expression, Block, [ "else", (IfStmt | Block) ] ;
+ForStmt = "for", ( ForRange | ForIn | ForClassic ) ;
+ForRange = Identifier, "in", Expression, [ "..", Expression ] ;
+ForIn = [ Identifier, "," ], Identifier, "in", Expression, [ WhereClause ] ;
+ForClassic = VarDecl, ";", Expression, ";", Expression, Block ;
+WhereClause = "where", Expression ;
+WhileStmt = "while", Expression, Block ;
+MatchStmt = "match", Expression, "{", { MatchCase }, [ "else", Block ], "}" ;
+MatchCase = ( Literal | Type | Expression ), Block ;
+
+(* Functions *)
+FunctionDecl = "func", Identifier, "(", [ Parameters ], ")", [ ":", Type ], Block ;
+Parameters = Parameter, { ",", Parameter } ;
+Parameter = Identifier, ":", Type, [ "..." ] ;
+Lambda = "{", [ Parameters, "->" ], Block, "}" ;
+FunctionCall = Expression, "(", [ Arguments ], ")" ;
+Arguments = Expression, { ",", Expression } ;
+
+(* Classes *)
+ClassDecl = "class", Identifier, [ "implements", Identifier ], "{", { ClassMember }, "}" ;
+ClassMember = VarDecl | FunctionDecl ;
+InterfaceDecl = "interface", Identifier, "{", { InterfaceMember }, "}" ;
+InterfaceMember = FunctionSignature | VarDecl ;
+FunctionSignature = "func", Identifier, "(", [ Parameters ], ")", [ ":", Type ] ;
+
+(* Imports *)
+ImportStmt = "import", ImportPath, [ "as", Identifier ] ;
+ImportPath = Identifier, { ".", Identifier } ;
+
+(* Basic Building Blocks *)
+Block = "{", { Statement }, "}" ;
+Statement = VarDecl | Assignment | IfStmt | ForStmt | WhileStmt | MatchStmt | 
+           FunctionCall | ReturnStmt | "break" | "continue" | Comment ;
+ReturnStmt = "return", [ Expression ] ;

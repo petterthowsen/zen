@@ -1,645 +1,313 @@
-# Zen Language Parser Proposal
+# Zen Parser Implementation Proposal
 
 ## Overview
+This document outlines the implementation strategy for the Zen language parser using the recursive descent algorithm. The parser will take an array of tokens as input and produce an Abstract Syntax Tree (AST) with ProgramNode as the root.
 
-This document outlines a proposal for implementing a recursive descent parser for the Zen programming language. The parser will transform a sequence of tokens from the lexer into an Abstract Syntax Tree (AST) that represents the program structure.
+## Parser Architecture
 
-## Grammar
-
-See grammar.txt
-
-## Parser Design
-
-### Core Components
-
-1. **Parser Structure**
+### Parser Class Structure
 ```go
-// Parser maintains the state during parsing
 type Parser struct {
-    tokens []lexing.Token    // Input token stream
-    current int              // Current token index
-    errors []common.SyntaxError  // Accumulated errors
-    panicMode bool           // Error recovery state
+    tokens []Token
+    current int
+    stopAtFirstError bool
+    errors []SyntaxError
 }
 
-// NewParser creates a new parser instance
-func NewParser(tokens []lexing.Token) *Parser {
+func NewParser(tokens []Token, stopAtFirstError bool) *Parser {
     return &Parser{
         tokens: tokens,
         current: 0,
-        errors: make([]common.SyntaxError, 0),
-        panicMode: false,
+        stopAtFirstError: stopAtFirstError,
+        errors: make([]SyntaxError, 0),
     }
 }
 ```
 
-2. **Helper Methods**
+### Main Parse Method
 ```go
-// Core parsing utilities
-func (p *Parser) peek() lexing.Token {
-    // Returns current token without consuming
-    return p.tokens[p.current]
-}
-
-func (p *Parser) previous() lexing.Token {
-    // Returns last consumed token
-    return p.tokens[p.current-1]
-}
-
-func (p *Parser) advance() lexing.Token {
-    // Moves to next token and returns current
-    if !p.isAtEnd() {
-        p.current++
-    }
-    return p.previous()
-}
-
-func (p *Parser) match(types ...lexing.TokenType) bool {
-    // Checks if current token matches any of the given types
-    for _, t := range types {
-        if p.check(t) {
-            p.advance()
-            return true
-        }
-    }
-    return false
-}
-
-func (p *Parser) consume(typ lexing.TokenType, message string) lexing.Token {
-    // Consumes token of expected type or reports error
-    if p.check(typ) {
-        return p.advance()
-    }
-    p.error(p.peek(), message)
-    return lexing.Token{}
-}
-
-func (p *Parser) synchronize() {
-    // Recovers from error by finding next safe parsing point
-    p.panicMode = false
+func (p *Parser) Parse() (*ProgramNode, []SyntaxError) {
+    statements := make([]Node, 0)
     
     for !p.isAtEnd() {
-        if p.previous().Type == lexing.SEMICOLON {
-            return
+        stmt := p.parseStatement()
+        if stmt != nil {
+            statements = append(statements, stmt)
         }
-
-        switch p.peek().Type {
-        case lexing.CLASS, lexing.FUNC, lexing.VAR, lexing.FOR, 
-             lexing.IF, lexing.WHILE, lexing.RETURN:
-            return
-        }
-
-        p.advance()
     }
+    
+    return NewProgramNode(statements), p.errors
 }
 ```
 
-### AST Node Types
+## AST Node Hierarchy
 
-1. **Base Node Interface**
+### Base Node Interface (lang/parsing/Node.go)
 ```go
-// Node represents any node in the AST
 type Node interface {
-    // String returns a debug representation
-    String() string
-    // Location returns source position
-    Location() *common.SourceLocation
+    Accept(visitor Visitor) interface{}
+    GetLocation() SourceLocation
 }
 ```
 
-2. **Expressions**
+### Expression Nodes (lang/parsing/expression/)
 ```go
-// Expression represents any value-producing construct
+// Expression.go - Base interface
 type Expression interface {
     Node
-    expressionNode()
+    isExpression() // Marker method
 }
 
-// Literal expressions
-type IntegerLiteral struct {
-    Token lexing.Token
-    Value int64
-}
-
-type FloatLiteral struct {
-    Token lexing.Token
-    Value float64
-}
-
-type StringLiteral struct {
-    Token lexing.Token
-    Value string
-}
-
-type BooleanLiteral struct {
-    Token lexing.Token
-    Value bool
-}
-
-// Binary expressions (a + b, a * b, etc.)
-type BinaryExpression struct {
-    Left     Expression
-    Operator lexing.Token
-    Right    Expression
-}
-
-// Unary expressions (-a, !b, etc.)
-type UnaryExpression struct {
-    Operator lexing.Token
-    Right    Expression
-}
-
-// Variable reference
-type Identifier struct {
-    Token lexing.Token
-    Name  string
-}
-
-// Array expressions
-type ArrayLiteral struct {
-    Elements []Expression
-    Size     Expression // Optional for dynamic arrays
-    Type     Expression
-}
-
-// Map expressions
-type MapLiteral struct {
-    Pairs map[Expression]Expression
-    Type  Expression
-}
-
-// Function call
-type CallExpression struct {
-    Callee    Expression
-    Arguments []Expression
-    Location  *common.SourceLocation
-}
-
-// Property access (obj.prop)
-type PropertyExpression struct {
-    Object   Expression
-    Property *Identifier
-}
+// Specific expression nodes:
+- BinaryExpression (left, operator, right)
+- UnaryExpression (operator, expression)
+- LiteralExpression (value)
+- IdentifierExpression (name)
+- CallExpression (callee, arguments)
+- ArrayExpression (elements)
+- MapExpression (entries)
+- TupleExpression (elements)
+- MemberExpression (object, property)
+- LambdaExpression (parameters, body)
 ```
 
-3. **Statements**
+### Statement Nodes (lang/parsing/statement/)
 ```go
-// Statement represents any executable construct
+// Statement.go - Base interface
 type Statement interface {
     Node
-    statementNode()
+    isStatement() // Marker method
 }
 
-// Variable declaration
-type VarDeclaration struct {
-    Name        string
-    Type        Expression // Optional
-    Initializer Expression
-    IsConst     bool
-    Location    *common.SourceLocation
-}
-
-// Function declaration
-type FunctionDeclaration struct {
-    Name       string
-    Parameters []Parameter
-    ReturnType Expression
-    Body       []Statement
-    Location   *common.SourceLocation
-}
-
-// Parameter represents a function parameter
-type Parameter struct {
-    Name     string
-    Type     Expression
-    Optional bool
-}
-
-// Class declaration
-type ClassDeclaration struct {
-    Name       string
-    SuperClass string
-    Interfaces []string
-    Methods    []FunctionDeclaration
-    Properties []VarDeclaration
-    Location   *common.SourceLocation
-}
-
-// Control flow statements
-type IfStatement struct {
-    Condition   Expression
-    ThenBranch  []Statement
-    ElseBranch  []Statement
-    Location    *common.SourceLocation
-}
-
-type ForStatement struct {
-    // Traditional for loop
-    Initializer Statement
-    Condition   Expression
-    Increment   Statement
-    // Range-based for loop
-    LoopVar     string
-    Collection  Expression
-    // Common
-    Body        []Statement
-    Location    *common.SourceLocation
-}
-
-type WhileStatement struct {
-    Condition Expression
-    Body      []Statement
-    Location  *common.SourceLocation
-}
-
-type MatchStatement struct {
-    Value    Expression
-    Cases    []MatchCase
-    ElseCase []Statement
-    Location *common.SourceLocation
-}
-
-type MatchCase struct {
-    Pattern Expression
-    Body    []Statement
-}
-
-// Return statement
-type ReturnStatement struct {
-    Value    Expression
-    Location *common.SourceLocation
-}
+// Specific statement nodes:
+- VarDeclarationStatement (name, type, initializer)
+- AssignmentStatement (target, operator, value)
+- IfStatement (condition, thenBranch, elseBranch)
+- ForStatement (init, condition, increment, body)
+- WhileStatement (condition, body)
+- ReturnStatement (value)
+- MatchStatement (value, cases, elseBranch)
+- FunctionDeclaration (name, parameters, returnType, body)
+- ClassDeclaration (name, implements, members)
+- InterfaceDeclaration (name, members)
+- ImportStatement (path, alias)
 ```
 
-## Parsing Strategy
+## Operator Precedence
+Following standard precedence rules:
 
-### 1. Expression Parsing
+1. Primary (literals, identifiers, grouping)
+2. Postfix (member access, array access, function calls)
+3. Unary (!, -, not)
+4. Multiplicative (*, /)
+5. Additive (+, -)
+6. Relational (<, >, <=, >=)
+7. Equality (==, !=)
+8. Logical AND (and)
+9. Logical OR (or)
+10. Assignment (=, +=, -=, *=, /=)
 
-The parser uses precedence climbing for expressions, which provides a clean and efficient way to handle operator precedence:
-
+Implementation:
 ```go
-// Operator precedence levels
-var precedence = map[lexing.TokenType]int{
-    lexing.OR:             1,  // or
-    lexing.AND:            2,  // and
-    lexing.EQUALS:         3,  // ==
-    lexing.NOT_EQUALS:     3,  // !=
-    lexing.LESS:           4,  // <
-    lexing.LESS_EQUALS:    4,  // <=
-    lexing.GREATER:        4,  // >
-    lexing.GREATER_EQUALS: 4,  // >=
-    lexing.PLUS:           5,  // +
-    lexing.MINUS:          5,  // -
-    lexing.MULTIPLY:       6,  // *
-    lexing.DIVIDE:         6,  // /
-    lexing.PERCENT:        6,  // %
-    lexing.DOT:           7,  // .
-    lexing.LEFT_PAREN:    8,  // (
-    lexing.LEFT_BRACKET:  8,  // [
-}
-```
-
-Expression parsing methods with examples:
-
-```go
-func (p *Parser) expression() Expression {
-    return p.assignment()
+func (p *Parser) parseExpression() Expression {
+    return p.parseAssignment()
 }
 
-// Handles variable assignment
-// Example: x = 5
-func (p *Parser) assignment() Expression {
-    expr := p.logicalOr()
+func (p *Parser) parseAssignment() Expression {
+    expr := p.parseOr()
     
-    if p.match(lexing.ASSIGN) {
-        equals := p.previous()
-        value := p.assignment()
-        
-        if id, ok := expr.(*Identifier); ok {
-            return &AssignmentExpression{
-                Name: id.Name,
-                Value: value,
-            }
-        }
-        p.error(equals, "Invalid assignment target")
+    if p.match(EQUAL, PLUS_EQUAL, MINUS_EQUAL, STAR_EQUAL, SLASH_EQUAL) {
+        operator := p.previous()
+        value := p.parseAssignment()
+        // Handle assignment
+        return NewAssignmentExpression(expr, operator, value)
     }
     
     return expr
 }
 
-// Handles binary operations based on precedence
-func (p *Parser) binary(precedenceLevel int) Expression {
-    left := p.unary()
-    
-    for p.peek().Type.Precedence() > precedenceLevel {
-        operator := p.advance()
-        right := p.binary(operator.Type.Precedence())
-        left = &BinaryExpression{
-            Left: left,
-            Operator: operator,
-            Right: right,
-        }
-    }
-    
-    return left
-}
-
-// Example AST for: 1 + 2 * 3
-//        +
-//       / \
-//      1   *
-//         / \
-//        2   3
+// Similar methods for each precedence level
+func (p *Parser) parseOr() Expression
+func (p *Parser) parseAnd() Expression
+func (p *Parser) parseEquality() Expression
+// etc...
 ```
 
-### 2. Statement Parsing
+## Error Handling and Recovery
 
-Each statement type has its own parsing method. Here's how they work:
-
+### Error Types
 ```go
-// Parses any statement
-func (p *Parser) statement() Statement {
-    switch {
-    case p.match(lexing.VAR):
-        return p.varDeclaration()
-    case p.match(lexing.FUNC):
-        return p.functionDeclaration()
-    case p.match(lexing.CLASS):
-        return p.classDeclaration()
-    case p.match(lexing.IF):
-        return p.ifStatement()
-    case p.match(lexing.FOR):
-        return p.forStatement()
-    case p.match(lexing.WHILE):
-        return p.whileStatement()
-    case p.match(lexing.MATCH):
-        return p.matchStatement()
-    case p.match(lexing.RETURN):
-        return p.returnStatement()
-    default:
-        return p.expressionStatement()
-    }
-}
-
-// Example: Variable Declaration
-// var x:int = 5
-func (p *Parser) varDeclaration() Statement {
-    name := p.consume(lexing.IDENTIFIER, "Expected variable name")
-    
-    var typeExpr Expression
-    if p.match(lexing.COLON) {
-        typeExpr = p.typeExpression()
-    }
-    
-    var initializer Expression
-    if p.match(lexing.ASSIGN) {
-        initializer = p.expression()
-    }
-    
-    p.consume(lexing.SEMICOLON, "Expected ';' after variable declaration")
-    
-    return &VarDeclaration{
-        Name: name.Literal,
-        Type: typeExpr,
-        Initializer: initializer,
-        Location: name.Location,
-    }
-}
-
-// Example: If Statement
-// if x > 0 { print(x) } else { print("negative") }
-func (p *Parser) ifStatement() Statement {
-    condition := p.expression()
-    thenBranch := p.block()
-    
-    var elseBranch []Statement
-    if p.match(lexing.ELSE) {
-        if p.match(lexing.IF) {
-            elseBranch = []Statement{p.ifStatement()}
-        } else {
-            elseBranch = p.block()
-        }
-    }
-    
-    return &IfStatement{
-        Condition: condition,
-        ThenBranch: thenBranch,
-        ElseBranch: elseBranch,
-        Location: condition.Location(),
-    }
+type SyntaxError struct {
+    Message string
+    Location SourceLocation
+    ExpectedToken TokenType
+    ActualToken Token
 }
 ```
 
-### 3. Type Parsing
+### Recovery Strategy
+The parser uses structural elements (braces, keywords) rather than whitespace for synchronization points. Each token carries source location information for error reporting.
 
-Zen supports generic types and nullable types. Here's how they're parsed:
-
-```go
-func (p *Parser) typeExpression() Expression {
-    base := p.identifier()
-    
-    // Handle generics: Array<int, 3>
-    if p.match(lexing.LESS) {
-        var params []Expression
-        
-        if !p.check(lexing.GREATER) {
-            do {
-                params = append(params, p.typeExpression())
-            } while p.match(lexing.COMMA)
-        }
-        
-        p.consume(lexing.GREATER, "Expected '>' after type parameters")
-        
-        base = &GenericType{
-            Base: base,
-            Parameters: params,
-        }
-    }
-    
-    // Handle nullable types: string?
-    if p.match(lexing.QMARK) {
-        base = &NullableType{
-            BaseType: base,
-        }
-    }
-    
-    return base
-}
-```
-
-### 4. Error Recovery
-
-The parser implements panic mode error recovery:
+1. Synchronization points:
+   - Opening braces of blocks
+   - Statement-starting keywords (class, func, var, etc.)
+   - Closing braces of blocks
+   
+2. Error Recovery Process:
+   - On error, record the error with exact location from token
+   - If stopAtFirstError is false, synchronize to next statement
+   - Continue parsing from synchronized position
 
 ```go
 func (p *Parser) synchronize() {
-    p.panicMode = false
+    p.advance()
     
     for !p.isAtEnd() {
-        if p.previous().Type == lexing.SEMICOLON {
+        // Synchronize on block boundaries
+        if p.previous().Type == RIGHT_BRACE {
             return
         }
-
+        
+        // Synchronize on statement-starting tokens
         switch p.peek().Type {
-        case lexing.CLASS, lexing.FUNC, lexing.VAR, lexing.FOR, 
-             lexing.IF, lexing.WHILE, lexing.RETURN:
+        case CLASS, FUNC, VAR, FOR, IF, WHILE, RETURN, LEFT_BRACE:
             return
         }
-
+        
         p.advance()
     }
 }
 
-func (p *Parser) error(token lexing.Token, message string) {
-    if p.panicMode {
-        return // Avoid cascading errors
+func (p *Parser) error(message string) {
+    err := NewSyntaxError(message, p.peek().Location)
+    p.errors = append(p.errors, err)
+    
+    if p.stopAtFirstError {
+        panic(err) // Will be caught in Parse()
+    }
+}
+```
+
+## Implementation Strategy
+
+### Helper Methods
+```go
+func (p *Parser) match(types ...TokenType) bool
+func (p *Parser) advance() Token
+func (p *Parser) peek() Token
+func (p *Parser) previous() Token
+func (p *Parser) check(type TokenType) bool
+func (p *Parser) isAtEnd() bool
+```
+
+### Statement Parsing
+Each statement type will have its own parsing method:
+```go
+func (p *Parser) parseStatement() Statement {
+    switch {
+    case p.match(VAR, CONST):
+        return p.parseVarDeclaration()
+    case p.match(IF):
+        return p.parseIfStatement()
+    case p.match(FOR):
+        return p.parseForStatement()
+    case p.match(WHILE):
+        return p.parseWhileStatement()
+    case p.match(FUNC):
+        return p.parseFunctionDeclaration()
+    case p.match(CLASS):
+        return p.parseClassDeclaration()
+    case p.match(RETURN):
+        return p.parseReturnStatement()
+    case p.match(MATCH):
+        return p.parseMatchStatement()
+    default:
+        return p.parseExpressionStatement()
+    }
+}
+```
+
+### Type Parsing
+Basic type checking during parsing:
+```go
+func (p *Parser) parseType() Type {
+    if p.match(IDENTIFIER) {
+        typeName := p.previous().Lexeme
+        
+        // Handle array types
+        if p.match(LESS) {
+            elementType := p.parseType()
+            p.consume(GREATER, "Expect '>' after type parameters")
+            return NewArrayType(elementType)
+        }
+        
+        // Handle nullable types
+        if p.match(QUESTION) {
+            return NewNullableType(NewSimpleType(typeName))
+        }
+        
+        return NewSimpleType(typeName)
     }
     
-    p.errors = append(p.errors, common.SyntaxError{
-        Message: message,
-        Location: token.Location,
-    })
-    
-    p.panicMode = true
+    p.error("Expect type name")
+    return nil
 }
 ```
 
-Example error recovery:
+## File Organization
+
+```
+lang/
+├── parsing/
+│   ├── Node.go             # Base node interface
+│   ├── Parser.go           # Main parser implementation
+│   ├── ProgramNode.go      # Root AST node
+│   ├── Type.go            # Type system nodes
+│   ├── expression/
+│   │   ├── Expression.go   # Base expression interface
+│   │   ├── Binary.go
+│   │   ├── Unary.go
+│   │   ├── Literal.go
+│   │   ├── Identifier.go
+│   │   └── ...
+│   └── statement/
+│       ├── Statement.go    # Base statement interface
+│       ├── VarDecl.go
+│       ├── FuncDecl.go
+│       ├── ClassDecl.go
+│       ├── If.go
+│       └── ...
+```
+
+## Usage Example
+
 ```go
-// Input: var x = 5 + * 3;
-//                    ^ Error here
-// Parser will:
-// 1. Report "Unexpected '*' after '+'"
-// 2. Enter panic mode
-// 3. Skip tokens until semicolon
-// 4. Continue parsing next statement
-```
-
-## Implementation Plan
-
-### Phase 1: Basic Expression Parsing (Week 1)
-- [x] Setup parser structure
-- [ ] Implement literal parsing
-- [ ] Add binary operations
-- [ ] Handle unary operations
-- [ ] Support grouping with parentheses
-
-### Phase 2: Statement Parsing (Week 2)
-- [ ] Variable declarations
-- [ ] Basic control flow (if, while)
-- [ ] Function declarations
-- [ ] Return statements
-
-### Phase 3: Advanced Features (Week 3)
-- [ ] Class declarations
-- [ ] Interface implementations
-- [ ] Generic type parsing
-- [ ] Match statements
-- [ ] For loops with range support
-
-### Phase 4: Error Handling & Recovery (Week 4)
-- [ ] Implement error reporting
-- [ ] Add synchronization points
-- [ ] Enhance error messages
-- [ ] Add recovery strategies
-
-### Phase 5: Optimization & Refinement (Week 5)
-- [ ] Optimize parser performance
-- [ ] Enhance AST for better semantic analysis
-- [ ] Add source location tracking
-- [ ] Improve error messages
-
-## Testing Strategy
-
-### 1. Unit Tests
-
-Test individual parser components:
-```go
-func TestIntegerLiteral(t *testing.T) {
-    input := "42"
-    parser := NewParser(lexer.Tokenize(input))
+func ParseSource(source string) (*ProgramNode, []SyntaxError) {
+    lexer := NewLexer(source)
+    tokens := lexer.ScanTokens()
     
-    expr := parser.expression()
-    literal, ok := expr.(*IntegerLiteral)
-    
-    assert.True(t, ok)
-    assert.Equal(t, int64(42), literal.Value)
-}
-
-func TestBinaryExpression(t *testing.T) {
-    input := "1 + 2 * 3"
-    parser := NewParser(lexer.Tokenize(input))
-    
-    expr := parser.expression()
-    binary, ok := expr.(*BinaryExpression)
-    
-    assert.True(t, ok)
-    assert.Equal(t, lexing.PLUS, binary.Operator.Type)
-    
-    right, ok := binary.Right.(*BinaryExpression)
-    assert.True(t, ok)
-    assert.Equal(t, lexing.MULTIPLY, right.Operator.Type)
+    parser := NewParser(tokens, false) // false = don't stop at first error
+    return parser.Parse()
 }
 ```
 
-### 2. Integration Tests
+## Error Examples
 
-Test complete program parsing:
-```go
-func TestCompleteProgram(t *testing.T) {
-    input := `
-        func fibonacci(n:int):int {
-            if n <= 1 {
-                return n
-            }
-            return fibonacci(n-1) + fibonacci(n-2)
-        }
-    `
-    parser := NewParser(lexer.Tokenize(input))
-    program := parser.parse()
-    
-    assert.Nil(t, parser.errors)
-    assert.Equal(t, 1, len(program.Declarations))
-    
-    funcDecl, ok := program.Declarations[0].(*FunctionDeclaration)
-    assert.True(t, ok)
-    assert.Equal(t, "fibonacci", funcDecl.Name)
-}
+```
+Error: Unexpected token
+Expected: '{'
+Found: '('
+At line 10, column 15
+
+Error: Missing closing brace
+Expected: '}'
+Found: EOF
+At line 20, column 1
+
+Error: Invalid class member
+Expected: function or variable declaration
+Found: 'if'
+At line 30, column 5
 ```
 
-### 3. Edge Cases
-
-Test complex scenarios:
-```go
-func TestComplexGenericType(t *testing.T) {
-    input := "var matrix:Array<Array<int, 3>, 2>"
-    parser := NewParser(lexer.Tokenize(input))
-    
-    decl := parser.varDeclaration()
-    assert.Nil(t, parser.errors)
-    
-    // Verify nested generic type structure
-}
-
-func TestErrorRecovery(t *testing.T) {
-    input := "var x = 1 + * 2; var y = 3;"
-    parser := NewParser(lexer.Tokenize(input))
-    
-    program := parser.parse()
-    assert.Equal(t, 1, len(parser.errors))
-    assert.Equal(t, 2, len(program.Declarations))
-}
-```
-
-## Conclusion
-
-This parser design provides a robust foundation for the Zen language, supporting all required language features while maintaining good error handling and recovery capabilities. The recursive descent approach allows for clear implementation of the grammar rules while the AST structure enables proper semantic analysis in later compilation phases.
-
-Key features:
-1. Complete grammar specification in EBNF
-2. Comprehensive AST node hierarchy
-3. Efficient expression parsing with precedence climbing
-4. Robust error recovery mechanism
-5. Clear testing strategy with examples
-6. Phased implementation plan
-
+The error messages include exact source locations since each token maintains its position information, even though whitespace is not tokenized.
