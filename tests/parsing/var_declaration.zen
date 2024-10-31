@@ -1,0 +1,13 @@
+// Basic variable declarations
+var name = "test"
+var age = 25
+var isValid = true
+
+// Variable declarations with type annotations
+var title:string = "Hello"
+var count:int = 42
+var enabled:bool = false
+
+// Nullable variables
+var description:string? = "optional"
+var quantity:int? = null
