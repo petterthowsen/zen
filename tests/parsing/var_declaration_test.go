@@ -1,39 +1,13 @@
 package parsing
 
 import (
-	"os"
-	"strings"
 	"testing"
-	"zen/lang/parsing/statement"
 )
 
 func TestVarDeclarationFile(t *testing.T) {
-	// Load and parse the test file
-	path := getTestDataPath("var_declaration.zen")
-	content, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("Failed to read file %s: %v", path, err)
-	}
-
-	program, errors := ParseFile(path, string(content))
-	if len(errors) > 0 {
-		t.Errorf("Parser errors:")
-		for _, err := range errors {
-			t.Errorf("  %s", err.Error())
-		}
-		return
-	}
-
+	program := ParseTestFile(t, "var_declaration.zen")
 	if program == nil {
-		t.Error("Expected program node, got nil")
 		return
-	}
-
-	// Save AST to file
-	astStr := program.String(0)
-	astPath := strings.TrimSuffix(path, ".zen") + ".ast"
-	if err := os.WriteFile(astPath, []byte(astStr), 0644); err != nil {
-		t.Logf("Warning: Failed to write AST file: %v", err)
 	}
 
 	// Verify basic structure
@@ -61,40 +35,10 @@ func TestVarDeclarationFile(t *testing.T) {
 	for i, exp := range expectedDecls {
 		stmt := program.Statements[i]
 		t.Logf("Checking declaration %d: %s", i, stmt.String(0))
-
-		// Type assert to VarDeclarationNode
-		varDecl, ok := stmt.(*statement.VarDeclarationNode)
-		if !ok {
-			t.Errorf("Statement %d: expected VarDeclarationNode, got %T", i, stmt)
-			continue
-		}
-
-		if varDecl.Name != exp.name {
-			t.Errorf("Declaration %d: expected name %q, got %q", i, exp.name, varDecl.Name)
-		}
-
-		if varDecl.Type != exp.typ {
-			t.Errorf("Declaration %d: expected type %q, got %q", i, exp.typ, varDecl.Type)
-		}
-
-		if varDecl.IsConstant != exp.isConst {
-			t.Errorf("Declaration %d: expected const=%v, got %v", i, exp.isConst, varDecl.IsConstant)
-		}
-
-		if varDecl.IsNullable != exp.nullable {
-			t.Errorf("Declaration %d: expected nullable=%v, got %v", i, exp.nullable, varDecl.IsNullable)
-		}
-
-		// TODO: Add initializer checks once expression parsing is implemented
+		AssertVarDeclaration(t, stmt, exp.name, exp.typ, exp.isConst, exp.nullable)
 	}
 }
 
 func TestParserError(t *testing.T) {
-	program, errors := ParseString("var")
-	if len(errors) == 0 {
-		t.Error("Expected parsing error, got none")
-	}
-	if program != nil {
-		t.Error("Expected nil program for error case")
-	}
+	AssertParseError(t, "var")
 }

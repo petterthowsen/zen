@@ -1,41 +1,14 @@
 package parsing
 
 import (
-	"os"
-	"strings"
 	"testing"
 	"zen/lang/parsing/ast"
-	"zen/lang/parsing/expression"
-	"zen/lang/parsing/statement"
 )
 
 func TestExpressionsFile(t *testing.T) {
-	// Load and parse the test file
-	path := getTestDataPath("expressions.zen")
-	content, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("Failed to read file %s: %v", path, err)
-	}
-
-	program, errors := ParseFile(path, string(content))
-	if len(errors) > 0 {
-		t.Errorf("Parser errors:")
-		for _, err := range errors {
-			t.Errorf("  %s", err.Error())
-		}
-		return
-	}
-
+	program := ParseTestFile(t, "expressions.zen")
 	if program == nil {
-		t.Error("Expected program node, got nil")
 		return
-	}
-
-	// Save AST to file
-	astStr := program.String(0)
-	astPath := strings.TrimSuffix(path, ".zen") + ".ast"
-	if err := os.WriteFile(astPath, []byte(astStr), 0644); err != nil {
-		t.Logf("Warning: Failed to write AST file: %v", err)
 	}
 
 	// Verify expressions in variable declarations
@@ -47,314 +20,165 @@ func TestExpressionsFile(t *testing.T) {
 		{
 			name: "answer",
 			checkInit: func(t *testing.T, init ast.Expression) {
-				lit, ok := init.(*expression.LiteralExpression)
-				if !ok {
-					t.Errorf("Expected LiteralExpression, got %T", init)
-					return
-				}
-				if lit.Value != int64(42) {
-					t.Errorf("Expected literal value 42, got %v", lit.Value)
-				}
+				AssertLiteralExpression(t, init, int64(42))
 			},
 		},
 		{
 			name:    "PI",
 			isConst: true,
 			checkInit: func(t *testing.T, init ast.Expression) {
-				lit, ok := init.(*expression.LiteralExpression)
-				if !ok {
-					t.Errorf("Expected LiteralExpression, got %T", init)
-					return
-				}
-				if lit.Value != float64(3.14) {
-					t.Errorf("Expected literal value 3.14, got %v", lit.Value)
-				}
+				AssertLiteralExpression(t, init, float64(3.14))
 			},
 		},
 		{
 			name: "zen",
 			checkInit: func(t *testing.T, init ast.Expression) {
-				lit, ok := init.(*expression.LiteralExpression)
-				if !ok {
-					t.Errorf("Expected LiteralExpression, got %T", init)
-					return
-				}
-				if lit.Value != true {
-					t.Errorf("Expected literal value true, got %v", lit.Value)
-				}
+				AssertLiteralExpression(t, init, true)
 			},
 		},
 		{
 			name: "nope",
 			checkInit: func(t *testing.T, init ast.Expression) {
-				lit, ok := init.(*expression.LiteralExpression)
-				if !ok {
-					t.Errorf("Expected LiteralExpression, got %T", init)
-					return
-				}
-				if lit.Value != false {
-					t.Errorf("Expected literal value false, got %v", lit.Value)
-				}
+				AssertLiteralExpression(t, init, false)
 			},
 		},
 		{
 			name: "title",
 			checkInit: func(t *testing.T, init ast.Expression) {
-				lit, ok := init.(*expression.LiteralExpression)
-				if !ok {
-					t.Errorf("Expected LiteralExpression, got %T", init)
-					return
-				}
-				if lit.Value != "Zen Lang!" {
-					t.Errorf("Expected literal value \"Zen Lang!\", got %v", lit.Value)
-				}
+				AssertLiteralExpression(t, init, "Zen Lang!")
 			},
 		},
 		{
 			name: "plus",
 			checkInit: func(t *testing.T, init ast.Expression) {
-				bin, ok := init.(*expression.BinaryExpression)
-				if !ok {
-					t.Errorf("Expected BinaryExpression, got %T", init)
+				bin := AssertBinaryExpression(t, init, "+")
+				if bin == nil {
 					return
 				}
-				if bin.Operator != "+" {
-					t.Errorf("Expected operator +, got %s", bin.Operator)
-				}
-				left, ok := bin.Left.(*expression.LiteralExpression)
-				if !ok || left.Value != int64(1) {
-					t.Errorf("Expected left operand 1, got %v", bin.Left)
-				}
-				right, ok := bin.Right.(*expression.LiteralExpression)
-				if !ok || right.Value != int64(2) {
-					t.Errorf("Expected right operand 2, got %v", bin.Right)
-				}
+				AssertLiteralExpression(t, bin.Left, int64(1))
+				AssertLiteralExpression(t, bin.Right, int64(2))
 			},
 		},
 		{
 			name: "minus",
 			checkInit: func(t *testing.T, init ast.Expression) {
-				bin, ok := init.(*expression.BinaryExpression)
-				if !ok {
-					t.Errorf("Expected BinaryExpression, got %T", init)
+				bin := AssertBinaryExpression(t, init, "-")
+				if bin == nil {
 					return
 				}
-				if bin.Operator != "-" {
-					t.Errorf("Expected operator -, got %s", bin.Operator)
-				}
-				left, ok := bin.Left.(*expression.LiteralExpression)
-				if !ok || left.Value != int64(5) {
-					t.Errorf("Expected left operand 5, got %v", bin.Left)
-				}
-				right, ok := bin.Right.(*expression.LiteralExpression)
-				if !ok || right.Value != int64(6) {
-					t.Errorf("Expected right operand 6, got %v", bin.Right)
-				}
+				AssertLiteralExpression(t, bin.Left, int64(5))
+				AssertLiteralExpression(t, bin.Right, int64(6))
 			},
 		},
 		{
 			name: "mult",
 			checkInit: func(t *testing.T, init ast.Expression) {
-				bin, ok := init.(*expression.BinaryExpression)
-				if !ok {
-					t.Errorf("Expected BinaryExpression, got %T", init)
+				bin := AssertBinaryExpression(t, init, "*")
+				if bin == nil {
 					return
 				}
-				if bin.Operator != "*" {
-					t.Errorf("Expected operator *, got %s", bin.Operator)
-				}
-				left, ok := bin.Left.(*expression.LiteralExpression)
-				if !ok || left.Value != int64(3) {
-					t.Errorf("Expected left operand 3, got %v", bin.Left)
-				}
-				right, ok := bin.Right.(*expression.LiteralExpression)
-				if !ok || right.Value != int64(4) {
-					t.Errorf("Expected right operand 4, got %v", bin.Right)
-				}
+				AssertLiteralExpression(t, bin.Left, int64(3))
+				AssertLiteralExpression(t, bin.Right, int64(4))
 			},
 		},
 		{
 			name: "divide",
 			checkInit: func(t *testing.T, init ast.Expression) {
-				bin, ok := init.(*expression.BinaryExpression)
-				if !ok {
-					t.Errorf("Expected BinaryExpression, got %T", init)
+				bin := AssertBinaryExpression(t, init, "/")
+				if bin == nil {
 					return
 				}
-				if bin.Operator != "/" {
-					t.Errorf("Expected operator /, got %s", bin.Operator)
-				}
-				left, ok := bin.Left.(*expression.LiteralExpression)
-				if !ok || left.Value != int64(10) {
-					t.Errorf("Expected left operand 10, got %v", bin.Left)
-				}
-				right, ok := bin.Right.(*expression.LiteralExpression)
-				if !ok || right.Value != int64(2) {
-					t.Errorf("Expected right operand 2, got %v", bin.Right)
-				}
+				AssertLiteralExpression(t, bin.Left, int64(10))
+				AssertLiteralExpression(t, bin.Right, int64(2))
 			},
 		},
 		{
 			name: "complex1",
 			checkInit: func(t *testing.T, init ast.Expression) {
-				bin, ok := init.(*expression.BinaryExpression)
-				if !ok {
-					t.Errorf("Expected BinaryExpression, got %T", init)
+				bin := AssertBinaryExpression(t, init, "+")
+				if bin == nil {
 					return
 				}
-				if bin.Operator != "+" {
-					t.Errorf("Expected operator +, got %s", bin.Operator)
-				}
-				left, ok := bin.Left.(*expression.LiteralExpression)
-				if !ok || left.Value != int64(2) {
-					t.Errorf("Expected left operand 2, got %v", bin.Left)
-				}
-				right, ok := bin.Right.(*expression.BinaryExpression)
-				if !ok {
-					t.Errorf("Expected right operand to be BinaryExpression, got %T", bin.Right)
+				AssertLiteralExpression(t, bin.Left, int64(2))
+
+				right := AssertBinaryExpression(t, bin.Right, "*")
+				if right == nil {
 					return
 				}
-				if right.Operator != "*" {
-					t.Errorf("Expected right operator *, got %s", right.Operator)
-				}
-				rightLeft, ok := right.Left.(*expression.LiteralExpression)
-				if !ok || rightLeft.Value != int64(3) {
-					t.Errorf("Expected right left operand 3, got %v", right.Left)
-				}
-				rightRight, ok := right.Right.(*expression.LiteralExpression)
-				if !ok || rightRight.Value != int64(4) {
-					t.Errorf("Expected right right operand 4, got %v", right.Right)
-				}
+				AssertLiteralExpression(t, right.Left, int64(3))
+				AssertLiteralExpression(t, right.Right, int64(4))
 			},
 		},
 		{
 			name: "complex2",
 			checkInit: func(t *testing.T, init ast.Expression) {
-				bin, ok := init.(*expression.BinaryExpression)
-				if !ok {
-					t.Errorf("Expected BinaryExpression, got %T", init)
+				bin := AssertBinaryExpression(t, init, "*")
+				if bin == nil {
 					return
 				}
-				if bin.Operator != "*" {
-					t.Errorf("Expected operator *, got %s", bin.Operator)
-				}
-				left, ok := bin.Left.(*expression.BinaryExpression)
-				if !ok {
-					t.Errorf("Expected left operand to be BinaryExpression, got %T", bin.Left)
+
+				left := AssertBinaryExpression(t, bin.Left, "+")
+				if left == nil {
 					return
 				}
-				if left.Operator != "+" {
-					t.Errorf("Expected left operator +, got %s", left.Operator)
-				}
-				leftLeft, ok := left.Left.(*expression.LiteralExpression)
-				if !ok || leftLeft.Value != int64(2) {
-					t.Errorf("Expected left left operand 2, got %v", left.Left)
-				}
-				leftRight, ok := left.Right.(*expression.LiteralExpression)
-				if !ok || leftRight.Value != int64(3) {
-					t.Errorf("Expected left right operand 3, got %v", left.Right)
-				}
-				right, ok := bin.Right.(*expression.LiteralExpression)
-				if !ok || right.Value != int64(4) {
-					t.Errorf("Expected right operand 4, got %v", bin.Right)
-				}
+				AssertLiteralExpression(t, left.Left, int64(2))
+				AssertLiteralExpression(t, left.Right, int64(3))
+
+				AssertLiteralExpression(t, bin.Right, int64(4))
 			},
 		},
 		{
 			name: "negative42",
 			checkInit: func(t *testing.T, init ast.Expression) {
-				un, ok := init.(*expression.UnaryExpression)
-				if !ok {
-					t.Errorf("Expected UnaryExpression, got %T", init)
+				un := AssertUnaryExpression(t, init, "-")
+				if un == nil {
 					return
 				}
-				if un.Operator != "-" {
-					t.Errorf("Expected operator -, got %s", un.Operator)
-				}
-				lit, ok := un.Expression.(*expression.LiteralExpression)
-				if !ok || lit.Value != int64(42) {
-					t.Errorf("Expected operand 42, got %v", un.Expression)
-				}
+				AssertLiteralExpression(t, un.Expression, int64(42))
 			},
 		},
 		{
 			name: "negated",
 			checkInit: func(t *testing.T, init ast.Expression) {
-				un, ok := init.(*expression.UnaryExpression)
-				if !ok {
-					t.Errorf("Expected UnaryExpression, got %T", init)
+				un := AssertUnaryExpression(t, init, "not")
+				if un == nil {
 					return
 				}
-				if un.Operator != "not" {
-					t.Errorf("Expected operator not, got %s", un.Operator)
-				}
-				lit, ok := un.Expression.(*expression.LiteralExpression)
-				if !ok || lit.Value != true {
-					t.Errorf("Expected operand true, got %v", un.Expression)
-				}
+				AssertLiteralExpression(t, un.Expression, true)
 			},
 		},
 		{
 			name: "result",
 			checkInit: func(t *testing.T, init ast.Expression) {
-				// -5 + plus * 1.5 + function()
-				bin1, ok := init.(*expression.BinaryExpression)
-				if !ok || bin1.Operator != "+" {
-					t.Errorf("Expected top-level binary + expression, got %T", init)
+				// -5 + plus * 1.5 + myFunc()
+				bin1 := AssertBinaryExpression(t, init, "+")
+				if bin1 == nil {
 					return
 				}
 
-				bin2, ok := bin1.Left.(*expression.BinaryExpression)
-				if !ok || bin2.Operator != "+" {
-					t.Errorf("Expected second-level binary + expression, got %T", bin1.Left)
+				bin2 := AssertBinaryExpression(t, bin1.Left, "+")
+				if bin2 == nil {
 					return
 				}
 
-				un, ok := bin2.Left.(*expression.UnaryExpression)
-				if !ok || un.Operator != "-" {
-					t.Errorf("Expected unary - expression, got %T", bin2.Left)
+				un := AssertUnaryExpression(t, bin2.Left, "-")
+				if un == nil {
 					return
 				}
+				AssertLiteralExpression(t, un.Expression, int64(5))
 
-				lit1, ok := un.Expression.(*expression.LiteralExpression)
-				if !ok || lit1.Value != int64(5) {
-					t.Errorf("Expected literal 5, got %v", un.Expression)
+				bin3 := AssertBinaryExpression(t, bin2.Right, "*")
+				if bin3 == nil {
 					return
 				}
+				AssertIdentifierExpression(t, bin3.Left, "plus")
+				AssertLiteralExpression(t, bin3.Right, float64(1.5))
 
-				bin3, ok := bin2.Right.(*expression.BinaryExpression)
-				if !ok || bin3.Operator != "*" {
-					t.Errorf("Expected binary * expression, got %T", bin2.Right)
+				call := AssertCallExpression(t, bin1.Right, 0)
+				if call == nil {
 					return
 				}
-
-				id1, ok := bin3.Left.(*expression.IdentifierExpression)
-				if !ok || id1.Name != "plus" {
-					t.Errorf("Expected identifier 'plus', got %T", bin3.Left)
-					return
-				}
-
-				lit2, ok := bin3.Right.(*expression.LiteralExpression)
-				if !ok || lit2.Value != float64(1.5) {
-					t.Errorf("Expected literal 1.5, got %v", bin3.Right)
-					return
-				}
-
-				call, ok := bin1.Right.(*expression.CallExpression)
-				if !ok {
-					t.Errorf("Expected CallExpression, got %T", bin1.Right)
-					return
-				}
-
-				id2, ok := call.Callee.(*expression.IdentifierExpression)
-				if !ok || id2.Name != "myFunc" {
-					t.Errorf("Expected identifier 'myFunc', got %T", call.Callee)
-					return
-				}
-
-				if len(call.Arguments) != 0 {
-					t.Errorf("Expected 0 arguments, got %d", len(call.Arguments))
-				}
+				AssertIdentifierExpression(t, call.Callee, "myFunc")
 			},
 		},
 	}
@@ -368,19 +192,9 @@ func TestExpressionsFile(t *testing.T) {
 		stmt := program.Statements[i]
 		t.Logf("Checking declaration %d: %s", i, stmt.String(0))
 
-		// Type assert to VarDeclarationNode
-		varDecl, ok := stmt.(*statement.VarDeclarationNode)
-		if !ok {
-			t.Errorf("Statement %d: expected VarDeclarationNode, got %T", i, stmt)
+		varDecl := AssertVarDeclaration(t, stmt, exp.name, "", exp.isConst, false)
+		if varDecl == nil {
 			continue
-		}
-
-		if varDecl.Name != exp.name {
-			t.Errorf("Declaration %d: expected name %q, got %q", i, exp.name, varDecl.Name)
-		}
-
-		if varDecl.IsConstant != exp.isConst {
-			t.Errorf("Declaration %d: expected const=%v, got %v", i, exp.isConst, varDecl.IsConstant)
 		}
 
 		if exp.checkInit != nil {
@@ -394,23 +208,14 @@ func TestExpressionsFile(t *testing.T) {
 }
 
 func TestExpressionErrors(t *testing.T) {
-	cases := []struct {
-		input string
-	}{
-		{"var x = 1 +"},
-		{"var x = * 2"},
-		{"var x = (1 + 2"},
-		{"var x = 1 + + 2"},
+	cases := []string{
+		"var x = 1 +",
+		"var x = * 2",
+		"var x = (1 + 2",
+		"var x = 1 + + 2",
 	}
 
-	for _, c := range cases {
-		program, errors := ParseString(c.input)
-		if len(errors) == 0 {
-			t.Errorf("Input %q: expected error, got none", c.input)
-			continue
-		}
-		if program != nil {
-			t.Errorf("Input %q: expected nil program for error case", c.input)
-		}
+	for _, input := range cases {
+		AssertParseError(t, input)
 	}
 }

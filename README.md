@@ -54,6 +54,37 @@ The test suite generates output files to help with debugging and verification:
 - `.tokens` files: Show the lexical analysis results
 - `.ast` files: Show the parsed Abstract Syntax Tree
 
+### Test Utilities
+
+The project provides test utilities to simplify writing and maintaining tests:
+
+#### Parser Test Utilities (`tests/parsing/parser_test_utils.go`)
+
+1. File Handling:
+```go
+// Parse a test file and save its AST
+program := ParseTestFile(t, "your_test.zen")
+
+// Parse a string directly
+program, errors := ParseString("var x = 42")
+```
+
+2. AST Node Assertions:
+```go
+// Assert variable declarations
+varDecl := AssertVarDeclaration(t, stmt, "name", "type", isConst, isNullable)
+
+// Assert expressions
+literal := AssertLiteralExpression(t, expr, 42)
+binary := AssertBinaryExpression(t, expr, "+")
+unary := AssertUnaryExpression(t, expr, "-")
+ident := AssertIdentifierExpression(t, expr, "varName")
+call := AssertCallExpression(t, expr, expectedArgCount)
+
+// Assert parsing errors
+AssertParseError(t, "invalid { syntax")
+```
+
 ## Implementing New Features
 
 ### 1. Update the Grammar
@@ -122,33 +153,40 @@ func (p *Parser) parseNewFeature() ast.Statement {
 }
 ```
 
-3. Add test cases:
-   - Create `tests/parsing/new_feature.zen` with example code
-   - Create `tests/parsing/new_feature_test.go` with test cases
-
 ### 4. Testing Strategy
 
-1. Start with lexer tests to ensure proper tokenization
-2. Add parser tests to verify AST construction
-3. Use the `.tokens` and `.ast` files to verify output
-4. Include error cases to test proper error handling
+1. Create test files:
+   - `tests/parsing/new_feature.zen`: Example code using the new feature
+   - `tests/parsing/new_feature_test.go`: Test cases using test utilities
 
-Example test structure:
+2. Write comprehensive tests:
 ```go
 func TestNewFeature(t *testing.T) {
-    // Test successful parsing
-    program, errors := ParseString("newfeature { }")
-    if len(errors) > 0 {
-        t.Error("Expected no errors")
+    // Test successful parsing using utilities
+    program := ParseTestFile(t, "new_feature.zen")
+    if program == nil {
+        return
+    }
+
+    // Use assertion helpers for validation
+    stmt := program.Statements[0]
+    feature := AssertNewFeature(t, stmt, expectedName)
+    
+    // Validate complex structures
+    if feature.SomeExpression != nil {
+        AssertBinaryExpression(t, feature.SomeExpression, "+")
     }
 
     // Test error cases
-    program, errors = ParseString("newfeature")
-    if len(errors) == 0 {
-        t.Error("Expected error for incomplete feature")
-    }
+    AssertParseError(t, "incomplete newfeature")
+    AssertParseError(t, "newfeature with { invalid syntax")
 }
 ```
+
+3. Verify AST output:
+   - Check the generated `.ast` file for correct structure
+   - Ensure proper indentation and node relationships
+   - Validate error messages and locations
 
 ## Error Handling
 
