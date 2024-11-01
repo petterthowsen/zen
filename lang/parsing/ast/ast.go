@@ -37,6 +37,8 @@ type Visitor interface {
 	VisitUnary(node Expression) interface{}
 	VisitIdentifier(node Expression) interface{}
 	VisitCall(node Expression) interface{}
+	VisitIfStatement(node Statement) interface{}
+	VisitExpressionStatement(node Statement) interface{}
 }
 
 // ProgramNode represents the root node of the AST

@@ -1,0 +1,14 @@
+if true {
+    print("first")
+}
+
+var name = "john"
+var age = 25
+
+if name == "john" or age > 20 {
+    print("second")
+}
+
+if (name == "john" and age > 20) or (name == "jane" and age > 40) {
+    print("third")
+}

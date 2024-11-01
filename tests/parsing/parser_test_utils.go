@@ -123,6 +123,16 @@ func AssertVarDeclaration(t *testing.T, stmt ast.Statement, name string, typ str
 	return varDecl
 }
 
+// AssertIfStatement checks if a statement is an if statement and returns it
+func AssertIfStatement(t *testing.T, stmt ast.Statement) *statement.IfStatement {
+	ifStmt, ok := stmt.(*statement.IfStatement)
+	if !ok {
+		t.Errorf("Expected IfStatement, got %T", stmt)
+		return nil
+	}
+	return ifStmt
+}
+
 // AssertLiteralExpression checks if an expression is a literal with expected value
 func AssertLiteralExpression(t *testing.T, expr ast.Expression, expectedValue interface{}) *expression.LiteralExpression {
 	lit, ok := expr.(*expression.LiteralExpression)

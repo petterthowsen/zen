@@ -177,6 +177,19 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseVarDeclaration()
 	}
 
+	if p.matchKeyword("if") {
+		return p.parseIfStatement()
+	}
+
+	// Try parsing an expression statement
+	expr := p.parseExpression()
+	if expr != nil {
+		return &statement.ExpressionStatement{
+			Location:   p.previous().Location,
+			Expression: expr,
+		}
+	}
+
 	token := p.peek()
 	if token.Type == lexing.EOF {
 		return nil // End of file is not an error
@@ -184,6 +197,46 @@ func (p *Parser) parseStatement() ast.Statement {
 
 	p.errorAtToken(token, "Expected statement")
 	return nil
+}
+
+// parseIfStatement parses an if statement
+func (p *Parser) parseIfStatement() ast.Statement {
+	startToken := p.previous() // The 'if' token
+
+	// Parse condition
+	condition := p.parseExpression()
+	if condition == nil {
+		return nil
+	}
+
+	// Parse body
+	if !p.match(lexing.LEFT_BRACE) {
+		p.error("Expected '{' after if condition")
+		return nil
+	}
+
+	body := make([]ast.Statement, 0)
+	for !p.check(lexing.RIGHT_BRACE) && !p.isAtEnd() {
+		stmt := p.parseStatement()
+		if stmt != nil {
+			body = append(body, stmt)
+		} else {
+			// If statement parsing failed, stop parsing body
+			break
+		}
+	}
+
+	// Consume the right brace
+	if !p.match(lexing.RIGHT_BRACE) {
+		p.error("Expected '}' after if body")
+		return nil
+	}
+
+	return &statement.IfStatement{
+		Location:  startToken.Location,
+		Condition: condition,
+		Body:      body,
+	}
 }
 
 // parseVarDeclaration: Parses a variable declaration
@@ -235,7 +288,75 @@ func (p *Parser) parseVarDeclaration() ast.Statement {
 
 // parseExpression: Entry point for expression parsing
 func (p *Parser) parseExpression() ast.Expression {
-	return p.parseAdditive()
+	return p.parseLogicalOr()
+}
+
+// parseLogicalOr parses logical OR expressions
+func (p *Parser) parseLogicalOr() ast.Expression {
+	expr := p.parseLogicalAnd()
+
+	for p.matchKeyword("or") {
+		operator := p.previous().Literal
+		right := p.parseLogicalAnd()
+		if right == nil {
+			p.error("Expected expression after 'or'")
+			return nil
+		}
+		expr = expression.NewBinaryExpression(expr, operator, right, p.previous().Location)
+	}
+
+	return expr
+}
+
+// parseLogicalAnd parses logical AND expressions
+func (p *Parser) parseLogicalAnd() ast.Expression {
+	expr := p.parseEquality()
+
+	for p.matchKeyword("and") {
+		operator := p.previous().Literal
+		right := p.parseEquality()
+		if right == nil {
+			p.error("Expected expression after 'and'")
+			return nil
+		}
+		expr = expression.NewBinaryExpression(expr, operator, right, p.previous().Location)
+	}
+
+	return expr
+}
+
+// parseEquality parses equality expressions
+func (p *Parser) parseEquality() ast.Expression {
+	expr := p.parseComparison()
+
+	for p.match(lexing.EQUALS, lexing.NOT_EQUALS) {
+		operator := p.previous().Literal
+		right := p.parseComparison()
+		if right == nil {
+			p.error("Expected expression after comparison operator")
+			return nil
+		}
+		expr = expression.NewBinaryExpression(expr, operator, right, p.previous().Location)
+	}
+
+	return expr
+}
+
+// parseComparison parses comparison expressions
+func (p *Parser) parseComparison() ast.Expression {
+	expr := p.parseAdditive()
+
+	for p.match(lexing.LESS, lexing.LESS_EQUALS, lexing.GREATER, lexing.GREATER_EQUALS) {
+		operator := p.previous().Literal
+		right := p.parseAdditive()
+		if right == nil {
+			p.error("Expected expression after comparison operator")
+			return nil
+		}
+		expr = expression.NewBinaryExpression(expr, operator, right, p.previous().Location)
+	}
+
+	return expr
 }
 
 // parseAdditive: Parses addition and subtraction

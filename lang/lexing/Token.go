@@ -132,6 +132,9 @@ var keywords = []string{
 	"true",
 	"false",
 	"null",
+
+	"and",
+	"or",
 	"not",
 }
 
