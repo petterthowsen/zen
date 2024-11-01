@@ -9,21 +9,32 @@ import (
 	"strings"
 	"zen/lang/common"
 	"zen/lang/lexing"
+	"zen/lang/parsing"
 )
 
 var DEBUG bool
 var REPL bool
 var DEBUG_TOKENS bool
 var DEBUG_PARSE_TREE bool
+var VERBOSE bool
 
 // Main Executes zen code from stdin, from a file ending with .zen or starts the REPL.
 func main() {
 	flag.BoolVar(&DEBUG, "debug", false, "enable debug mode")
+
 	flag.BoolVar(&REPL, "interactive", false, "enable interactive mode aka Read-Eval-Print Loop (REPL)")
 	flag.BoolVar(&REPL, "i", false, "enable interactive mode aka Read-Eval-Print Loop (REPL)")
-	flag.BoolVar(&DEBUG_TOKENS, "tokenize", false, "show tokenized input")
-	flag.BoolVar(&DEBUG_PARSE_TREE, "parse", false, "show parse tree")
+
+	flag.BoolVar(&DEBUG_TOKENS, "tokens", false, "show tokenized input")
+	flag.BoolVar(&DEBUG_PARSE_TREE, "ast", false, "show parse tree")
+	flag.BoolVar(&VERBOSE, "verbose", false, "show tokens and parse tree")
+	flag.BoolVar(&VERBOSE, "v", false, "show tokens and parse tree")
 	flag.Parse()
+
+	if VERBOSE {
+		DEBUG_TOKENS = true
+		DEBUG_PARSE_TREE = true
+	}
 
 	if DEBUG_TOKENS {
 		println("Debugging Tokens Enabled")
@@ -73,7 +84,11 @@ func execute(code common.SourceCode) {
 	tokens, err := lexer.Scan()
 	if err != nil {
 		if len(lexer.Errors) > 0 {
-			printSyntaxErrors(lexer.Errors)
+			syntaxErrors := make([]*common.SyntaxError, len(lexer.Errors))
+			for i, err := range lexer.Errors {
+				syntaxErrors[i] = &err
+			}
+			printSyntaxErrors(syntaxErrors)
 		}
 	}
 
@@ -84,11 +99,28 @@ func execute(code common.SourceCode) {
 		}
 	}
 
+	if err == nil {
+		parser := parsing.NewParser(tokens, true)
+		program, syntaxErrors := parser.Parse()
+
+		if len(syntaxErrors) > 0 {
+			printSyntaxErrors(syntaxErrors)
+		}
+
+		if DEBUG_PARSE_TREE {
+			if DEBUG_TOKENS {
+				fmt.Println("-----------------------------------------")
+			}
+			fmt.Println("AST:")
+			fmt.Println(program.String(2))
+		}
+	}
+
 }
 
 // printSyntaxErrors prints the list of syntax errors to the standard output.
 // Each error is printed using the Error method of the common.SyntaxError type.
-func printSyntaxErrors(errors []common.SyntaxError) {
+func printSyntaxErrors(errors []*common.SyntaxError) {
 	fmt.Println("Whoops! Syntax Error(s):")
 
 	for _, err := range errors {

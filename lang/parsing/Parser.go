@@ -54,11 +54,14 @@ func (p *Parser) Parse() (*ast.ProgramNode, []*common.SyntaxError) {
 		}
 	}
 
-	if len(p.errors) > 0 {
-		return nil, p.errors
-	}
+	programNode := ast.NewProgramNode(statements)
 
-	return ast.NewProgramNode(statements), nil
+	// return with any errors
+	if len(p.errors) > 0 {
+		return programNode, p.errors
+	} else {
+		return programNode, nil
+	}
 }
 
 // synchronize skips tokens until a statement boundary is found
