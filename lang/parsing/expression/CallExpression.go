@@ -14,7 +14,7 @@ type CallExpression struct {
 	Location  *common.SourceLocation
 }
 
-func NewCallExpression(callee ast.Expression, arguments []ast.Expression, location *common.SourceLocation) *CallExpression {
+func NewCallExpression(callee *IdentifierExpression, arguments []ast.Expression, location *common.SourceLocation) *CallExpression {
 	return &CallExpression{
 		Callee:    callee,
 		Arguments: arguments,

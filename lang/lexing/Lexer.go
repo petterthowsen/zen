@@ -42,17 +42,20 @@ func (l *Lexer) Scan() ([]Token, error) {
 	for l.Index <= l.SourceCode.GetLength() {
 		ch := l.Peek()
 
-		switch {
-		case l.IsEOF():
+		// end of file?
+		if l.IsEOF() {
 			eofToken := Token{
 				Type:     EOF,
 				Literal:  "",
 				Location: l.SourceCode.GetLocation(l.Line, l.Column),
 			}
 			l.tokens = append(l.tokens, eofToken)
-			l.Consume()
+			break
+		}
+
+		switch {
 		case string(ch) == "/" && string(l.Next()) == "/":
-			l.ConsumeAllExcept('\n')
+			l.ConsumeAllExcept("\n")
 		case string(ch) == "\"":
 			l.tokens = append(l.tokens, l.scanString())
 		case unicode.IsLetter(ch):
@@ -325,14 +328,14 @@ func (l *Lexer) Consume() rune {
 	return ch
 }
 
-func (l *Lexer) ConsumeAll(character rune) {
-	for l.Peek() == character {
+func (l *Lexer) ConsumeAll(character string) {
+	for string(l.Peek()) == character {
 		l.Consume()
 	}
 }
 
-func (l *Lexer) ConsumeAllExcept(character rune) {
-	for l.Peek() != character {
+func (l *Lexer) ConsumeAllExcept(character string) {
+	for string(l.Peek()) != character && !l.IsEOF() {
 		l.Consume()
 	}
 }

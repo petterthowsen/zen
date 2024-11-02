@@ -107,6 +107,7 @@ var keywords = []string{
 	"const",
 
 	"if",
+	"elif",
 	"else",
 
 	"for",

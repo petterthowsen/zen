@@ -1,0 +1,23 @@
+// simplest function
+func sayHello() {
+    print("Hello!")
+}
+
+// one parameter
+func say(something:string) {
+    print(something)
+}
+
+// two parameters and return type
+func add(a:int, b:int):int {
+    return a + b
+}
+
+// optional parameter
+func log(message:string, suffix:string?) {
+    if suffix {
+        print(message + suffix)
+    } else {
+       print(message)
+    }
+}

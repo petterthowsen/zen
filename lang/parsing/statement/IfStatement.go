@@ -8,9 +8,11 @@ import (
 
 // IfStatement represents an if statement in the AST
 type IfStatement struct {
-	Location  *common.SourceLocation
-	Condition ast.Expression
-	Body      []ast.Statement
+	Location         *common.SourceLocation
+	PrimaryCondition ast.Expression
+	PrimaryBlock     []ast.Statement
+	ElseIfBlocks     []*IfConditionBlock
+	ElseBlock        []ast.Statement
 }
 
 func (i *IfStatement) Accept(visitor ast.Visitor) interface{} {
@@ -28,10 +30,26 @@ func (i *IfStatement) String(indent int) string {
 	indentStr := strings.Repeat("  ", indent)
 
 	builder.WriteString(indentStr + "If\n")
-	builder.WriteString(indentStr + "  Condition:\n")
-	builder.WriteString(i.Condition.String(indent + 2))
-	builder.WriteString(indentStr + "  Body:\n")
-	for _, stmt := range i.Body {
+
+	// Write primary condition
+	builder.WriteString(indentStr + "  Primary Condition:\n")
+	builder.WriteString(i.PrimaryCondition.String(indent + 2))
+
+	// Write primary block
+	builder.WriteString(indentStr + "  Primary Block:\n")
+	for _, stmt := range i.PrimaryBlock {
+		builder.WriteString(stmt.String(indent + 2))
+	}
+
+	// Write else if blocks
+	builder.WriteString(indentStr + "  Else If Blocks:\n")
+	for _, elseIfBlock := range i.ElseIfBlocks {
+		builder.WriteString(elseIfBlock.String(indent + 2))
+	}
+
+	// write else block
+	builder.WriteString(indentStr + "  Else Block:\n")
+	for _, stmt := range i.ElseBlock {
 		builder.WriteString(stmt.String(indent + 2))
 	}
 

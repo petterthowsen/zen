@@ -9,7 +9,6 @@ import (
 
 func TestIfStatements(t *testing.T) {
 	// First test lexing
-	t.Log("Testing lexer...")
 	content := `if true {
     print("first")
 }
@@ -30,11 +29,6 @@ if (name == "john" and age > 20) or (name == "jane" and age > 40) {
 	tokens, err := lexer.Scan()
 	if err != nil {
 		t.Fatalf("Lexer error: %v", err)
-	}
-
-	t.Log("Tokens:")
-	for _, token := range tokens {
-		t.Logf("%s", token.String())
 	}
 
 	// Now test parsing
@@ -65,7 +59,7 @@ if (name == "john" and age > 20) or (name == "jane" and age > 40) {
 		t.Fatal("Failed to parse if statement")
 		return
 	}
-	AssertLiteralExpression(t, ifStmt.Condition, true)
+	AssertLiteralExpression(t, ifStmt.PrimaryCondition, true)
 
 	// Test if with comparison
 	t.Log("Testing second if statement (if name == 'john' or age > 20)")
@@ -75,7 +69,7 @@ if (name == "john" and age > 20) or (name == "jane" and age > 40) {
 		t.Fatal("Failed to parse if statement")
 		return
 	}
-	binary := AssertBinaryExpression(t, ifStmt.Condition, "or")
+	binary := AssertBinaryExpression(t, ifStmt.PrimaryCondition, "or")
 	if binary == nil {
 		t.Fatal("Failed to parse binary expression")
 		return
@@ -107,7 +101,7 @@ if (name == "john" and age > 20) or (name == "jane" and age > 40) {
 		t.Fatal("Failed to parse if statement")
 		return
 	}
-	binary = AssertBinaryExpression(t, ifStmt.Condition, "or")
+	binary = AssertBinaryExpression(t, ifStmt.PrimaryCondition, "or")
 	if binary == nil {
 		t.Fatal("Failed to parse binary expression")
 		return

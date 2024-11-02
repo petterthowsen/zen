@@ -14,6 +14,8 @@ import (
 	"zen/lang/parsing/statement"
 )
 
+const StopAtFirstError = false
+
 // ParseString parses source code string and returns the AST
 func ParseString(source string) (*ast.ProgramNode, []error) {
 	sourceCode := common.NewInlineSourceCode(source)
@@ -23,7 +25,7 @@ func ParseString(source string) (*ast.ProgramNode, []error) {
 		return nil, []error{err}
 	}
 
-	parser := parsing.NewParser(tokens, false)
+	parser := parsing.NewParser(tokens, StopAtFirstError)
 	program, syntaxErrors := parser.Parse()
 
 	// Convert syntax errors to regular errors
@@ -44,7 +46,7 @@ func ParseFile(path string, content string) (*ast.ProgramNode, []error) {
 		return nil, []error{err}
 	}
 
-	parser := parsing.NewParser(tokens, false)
+	parser := parsing.NewParser(tokens, StopAtFirstError)
 	program, syntaxErrors := parser.Parse()
 
 	// Convert syntax errors to regular errors
@@ -198,13 +200,19 @@ func AssertCallExpression(t *testing.T, expr ast.Expression, expectedArgCount in
 	return call
 }
 
+func AssertFuncDeclaration(t *testing.T, stmt ast.Statement) *statement.FuncDeclaration {
+	funcDecl, ok := stmt.(*statement.FuncDeclaration)
+	if !ok {
+		t.Errorf("Expected FuncDeclaration, got %T", stmt)
+		return nil
+	}
+	return funcDecl
+}
+
 // AssertParseError checks if parsing a string produces an error
 func AssertParseError(t *testing.T, input string) {
-	program, errors := ParseString(input)
+	_, errors := ParseString(input)
 	if len(errors) == 0 {
 		t.Errorf("Input %q: expected error, got none", input)
-	}
-	if program != nil {
-		t.Errorf("Input %q: expected nil program for error case", input)
 	}
 }

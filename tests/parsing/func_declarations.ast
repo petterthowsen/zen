@@ -1,0 +1,72 @@
+Program
+  FuncDeclaration sayHello
+    Parameters:
+    ReturnType: void
+    Body:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Literal: Hello!
+
+  FuncDeclaration say
+    Parameters:
+      FuncParameterExpression:
+        Name: something
+        Type: string
+    ReturnType: void
+    Body:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: something
+
+  FuncDeclaration add
+    Parameters:
+      FuncParameterExpression:
+        Name: a
+        Type: int
+      FuncParameterExpression:
+        Name: b
+        Type: int
+    ReturnType: int
+    Body:
+      Return
+        Binary: +
+          Identifier: a
+          Identifier: b
+
+  FuncDeclaration log
+    Parameters:
+      FuncParameterExpression:
+        Name: message
+        Type: string
+      FuncParameterExpression:
+        Name: suffix
+        Type: string
+    ReturnType: void
+    Body:
+      If
+        Primary Condition:
+          Identifier: suffix
+        Primary Block:
+          ExpressionStatement
+            Call
+              Callee:
+                Identifier: print
+              Arguments:
+                Binary: +
+                  Identifier: message
+                  Identifier: suffix
+        Else If Blocks:
+        Else Block:
+          ExpressionStatement
+            Call
+              Callee:
+                Identifier: print
+              Arguments:
+                Identifier: message
+

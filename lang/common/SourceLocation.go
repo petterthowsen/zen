@@ -24,5 +24,5 @@ func (sl *SourceLocation) GetLine() string {
 
 // GetLineWithMarker returns the code at the line with blank line with a caret (^) pointing to the column
 func (sl *SourceLocation) GetLineWithMarker() string {
-	return fmt.Sprintf("%s\n%s^", sl.GetLine(), strings.Repeat(" ", max(0, sl.Column)))
+	return fmt.Sprintf("%s\n%s^", sl.GetLine(), strings.Repeat(" ", max(0, sl.Column-1)))
 }

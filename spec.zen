@@ -1,10 +1,29 @@
-// this is a single-line comment
+//---------------------------//
+// Zen Language Reference
+//---------------------------//
+// https://github.com/thowsenmedia/zen
+//
+// Zen is an general-purpose interpreted programming language implemented in Go.
+//
+// Zen is strictly typed with type inference.
+// Zen supports many features, including:
+// - Classes
+// - Interfaces
+// - Functions
+// - Arrays
+// - Maps
+// - Tuples
+// - Loops
+// - Ranges
+// - Match statements
+// - Lambdas
+// - File Return Values and Structured Data Support
+// - Importing from other files
+// - Interface Checking
+// - Variables and Primitive Types
+// - Mutable and Immutable Variables
+// - Smart nullable types
 
-/*
-This is a
-multi-line
-comment
-*/
 
 //---------------//
 // Variables and Primitive Types
@@ -513,12 +532,12 @@ class LocalFileSystem implements FileSystemInterface {
 // Zen supports both explicit and structural interface checks using the `is` and `has` keywords for flexibility:
 
 interface Drawable {
-    func draw(): void
+    draw(): void
     var position: Vector2
 }
 
 class Circle {
-    func draw() {
+    draw() {
         print("Drawing a circle")
     }
 
@@ -551,6 +570,61 @@ if shape has position: Vector2 {
     print("Position is " + shape.position.to_string())
 }
 
+
+
+//------------------//
+// Type aliases
+//------------------//
+// Type aliases provide a way to create an alias for a type.
+
+// The following would in effect create an alias called 'ConfigurationMap' for the type 'Map<String, any>'
+// This can be useful to centralize the type needed for configuration, instead of a Configuration system needing to reference Map<String, any> in many places.
+// This helps in cases where you may want to change the type.
+
+type ConfigurationMap = Map<String, any>
+
+// Now you can use 'ConfigurationMap' instead of 'Map<String, any>'
+var config: ConfigurationMap = {
+    "volume": 0.5
+}
+
+//---------------//
+// Traits
+//---------------//
+// Classes can only extend a single class, but can implement multiple interfaces.
+// However, interfaces only describe what a class should implement, but not how it should be implemented.
+// Sometimes you may want to share some behavior between many different classes.
+// This is where Traits are useful.
+
+// Here's an example of a class that "uses" a Serialize trait:
+
+trait Serialization {
+    init(fields Array<string>) {
+        this.serializableFields = fields
+    }
+
+    serialize(): string {
+        var fields = Map<String, any> = {}
+        var string = ""
+        for i, field in this.serializableFields {
+            string += field + ":" + string(this[field])
+        }
+        return fields
+    }
+}
+
+class Person {
+    name: string
+    id: int = id
+    age: int = age
+
+    state: string = "active"
+
+    uses Serialization(["name", "id", "age"])
+}
+
+var p = new Person("john", 354, 25)
+print(p.serialize())
 
 
 //-----------------------------------//

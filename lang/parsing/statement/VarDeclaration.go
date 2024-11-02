@@ -7,7 +7,7 @@ import (
 	"zen/lang/parsing/ast"
 )
 
-// VarDeclarationNode represents a variable declaration in the AST
+// VarDeclarationNode represents a variable or constant declaration in the AST
 type VarDeclarationNode struct {
 	Name        string
 	Type        string // Optional type annotation
@@ -17,6 +17,7 @@ type VarDeclarationNode struct {
 	Location    *common.SourceLocation
 }
 
+// NewVarDeclarationNode creates a new VarDeclarationNode instance.
 func NewVarDeclarationNode(
 	name string,
 	typ string,

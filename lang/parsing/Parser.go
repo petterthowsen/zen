@@ -28,16 +28,16 @@ func NewParser(tokens []lexing.Token, stopAtFirstError bool) *Parser {
 
 // Parse takes an array of tokens and produces an AST with a ProgramNode as the root node.
 func (p *Parser) Parse() (*ast.ProgramNode, []*common.SyntaxError) {
-	defer func() {
-		if r := recover(); r != nil {
-			if _, ok := r.(*common.SyntaxError); ok {
-				// Expected panic from error() method
-				return
-			}
-			// Unexpected panic, re-panic
-			panic(r)
-		}
-	}()
+	//defer func() {
+	//	if r := recover(); r != nil {
+	//		if _, ok := r.(*common.SyntaxError); ok {
+	//			// Expected panic from error() method
+	//			return
+	//		}
+	//		// Unexpected panic, re-panic
+	//		panic(r)
+	//	}
+	//}()
 
 	statements := make([]ast.Statement, 0)
 
@@ -126,7 +126,7 @@ func (p *Parser) checkKeyword(keyword string) bool {
 	return token.Type == lexing.KEYWORD && token.Literal == keyword
 }
 
-// match returns true if the current token type matches any of the given TokenType
+// match checks and consumes (advances) the current token if it matches any of the given types
 func (p *Parser) match(types ...lexing.TokenType) bool {
 	for _, typ := range types {
 		if p.check(typ) {
@@ -137,7 +137,7 @@ func (p *Parser) match(types ...lexing.TokenType) bool {
 	return false
 }
 
-// matchKeyword returns true if the current token is a keyword with any of the given literals
+// matchKeyword returns true and consumes if the current token is a keyword with any of the given literals
 func (p *Parser) matchKeyword(keywords ...string) bool {
 	for _, keyword := range keywords {
 		if p.checkKeyword(keyword) {
@@ -176,21 +176,34 @@ func (p *Parser) errorAtToken(token lexing.Token, message string) {
 
 // parseStatement: Initial statement parsing - we'll expand this as we implement more features
 func (p *Parser) parseStatement() ast.Statement {
+	// var/const declaration
 	if p.matchKeyword("var", "const") {
 		return p.parseVarDeclaration()
 	}
 
+	// func declaration
+	if p.matchKeyword("func") {
+		return p.parseFuncDeclaration()
+	}
+
+	// If Statement
 	if p.matchKeyword("if") {
 		return p.parseIfStatement()
+	}
+
+	// Return statement
+	if p.matchKeyword("return") {
+		return p.parseReturnStatement()
 	}
 
 	// Try parsing an expression statement
 	expr := p.parseExpression()
 	if expr != nil {
-		return &statement.ExpressionStatement{
+		stmt := &statement.ExpressionStatement{
 			Location:   p.previous().Location,
 			Expression: expr,
 		}
+		return stmt
 	}
 
 	token := p.peek()
@@ -202,11 +215,113 @@ func (p *Parser) parseStatement() ast.Statement {
 	return nil
 }
 
+// parseBlock parses a block of statements until it encounters a right brace or the end of the input.
+func (p *Parser) parseBlock() []ast.Statement {
+	body := make([]ast.Statement, 0)
+
+	// Check for premature end of input
+	if p.isAtEnd() {
+		p.error("Unexpected end of input while parsing block")
+		return body
+	}
+
+	// Keep parsing statements until we hit a right brace or EOF or no statements
+	for !p.check(lexing.RIGHT_BRACE) {
+		if p.isAtEnd() {
+			p.error("Unterminated block - expected '}'")
+			return body
+		}
+
+		stmt := p.parseStatement()
+		if stmt == nil {
+			break
+		}
+		body = append(body, stmt)
+	}
+
+	// Note: We don't consume the right brace here because that should be done by the calling method
+	// This allows the calling method to handle any syntax after the block
+	return body
+}
+
 // parseIfStatement parses an if statement
 func (p *Parser) parseIfStatement() ast.Statement {
 	startToken := p.previous() // The 'if' token
 
-	// Parse condition
+	// parse the first IfConditionBlock explicitly since it is required
+	primaryCondition := p.parseExpression()
+	if primaryCondition == nil {
+		p.errorAtToken(startToken, "Expected expression after 'if'")
+		return nil
+	}
+
+	// parse the primary block
+	if !p.match(lexing.LEFT_BRACE) {
+		p.error("Expected '{' after 'if'")
+		return nil
+	}
+
+	primaryBlock := p.parseBlock()
+
+	if !p.match(lexing.RIGHT_BRACE) {
+		p.error("Expected '}' after if block")
+		return nil
+	}
+
+	// parse optional 'elif' condition blocks
+
+	elifBlocks := make([]*statement.IfConditionBlock, 0)
+
+	for {
+		tok := p.peek()
+		if tok.Type == lexing.EOF {
+			break
+		}
+
+		if p.matchKeyword("elif") {
+			block := p.parseIfConditionBlock()
+
+			if !p.match(lexing.RIGHT_BRACE) {
+				p.error("Expected '}' after elif block")
+				return nil
+			}
+
+			elifBlocks = append(elifBlocks, block)
+		} else {
+			break
+		}
+	}
+
+	// parse optional 'else' block
+	elseBlock := make([]ast.Statement, 0)
+
+	if p.matchKeyword("else") {
+		if !p.match(lexing.LEFT_BRACE) {
+			p.error("Expected '{' after else")
+			return nil
+		}
+		elseBlock = p.parseBlock()
+
+		if !p.match(lexing.RIGHT_BRACE) {
+			p.error("Expected '}' after else block")
+			return nil
+		}
+	}
+
+	return &statement.IfStatement{
+		Location:         startToken.Location,
+		PrimaryCondition: primaryCondition,
+		PrimaryBlock:     primaryBlock,
+		ElseIfBlocks:     elifBlocks,
+		ElseBlock:        elseBlock,
+	}
+}
+
+// parseIfConditionBlock  parses a condition followed by a block
+// I.E:
+// 1+1 == 2 {
+// }
+func (p *Parser) parseIfConditionBlock() *statement.IfConditionBlock {
 	condition := p.parseExpression()
 	if condition == nil {
 		return nil
@@ -218,27 +333,34 @@ func (p *Parser) parseIfStatement() ast.Statement {
 		return nil
 	}
 
-	body := make([]ast.Statement, 0)
-	for !p.check(lexing.RIGHT_BRACE) && !p.isAtEnd() {
-		stmt := p.parseStatement()
-		if stmt != nil {
-			body = append(body, stmt)
-		} else {
-			// If statement parsing failed, stop parsing body
-			break
-		}
-	}
+	body := p.parseBlock()
 
 	// Consume the right brace
 	if !p.match(lexing.RIGHT_BRACE) {
-		p.error("Expected '}' after if body")
+		p.error("Expected '}' after if condition")
 		return nil
 	}
 
-	return &statement.IfStatement{
-		Location:  startToken.Location,
+	return &statement.IfConditionBlock{
+		Location:  condition.GetLocation(),
 		Condition: condition,
 		Body:      body,
+	}
+}
+
+func (p *Parser) parseReturnStatement() ast.Statement {
+	startToken := p.previous() // The 'return' token
+
+	// after 'return' could be a closing } or an expression
+	var exp ast.Expression = nil
+
+	if !p.check(lexing.RIGHT_BRACE) {
+		exp = p.parseExpression()
+	}
+
+	return &statement.ReturnStatmenet{
+		Location:   startToken.Location,
+		Expression: exp,
 	}
 }
 
@@ -289,6 +411,138 @@ func (p *Parser) parseVarDeclaration() ast.Statement {
 	)
 }
 
+// parseFuncDeclaration: Parses a function declaration
+func (p *Parser) parseFuncDeclaration() ast.Statement {
+	startToken := p.previous() // Save the 'func' token for error reporting
+
+	// Parse function name
+	name := p.consume(lexing.IDENTIFIER, "Expected function name")
+	if len(p.errors) > 0 {
+		return nil
+	}
+
+	// Parse function parameters
+	if !p.match(lexing.LEFT_PAREN) {
+		p.error("Expected '(' after function name")
+		return nil
+	}
+
+	// Parse function parameters with comma between each parameter
+	parameters := make([]expression.FuncParameterExpression, 0)
+
+	// Handle parameters
+	if !p.check(lexing.RIGHT_PAREN) {
+		for {
+			// Parse parameter
+			param := p.parseFuncParameter()
+			if param == nil {
+				// Error already reported by parseFuncParameter
+				return nil
+			}
+			parameters = append(parameters, *param)
+
+			// Check for comma or end of parameters
+			if p.check(lexing.RIGHT_PAREN) {
+				break
+			}
+
+			if !p.match(lexing.COMMA) {
+				p.error("Expected ',' or ')' after function parameter")
+				return nil
+			}
+		}
+	}
+
+	// Consume the closing parenthesis
+	if !p.match(lexing.RIGHT_PAREN) {
+		p.error("Expected ')' after function parameters")
+		return nil
+	}
+
+	// Parse optional return type (defaults to "void" if not specified)
+	returnType := "void"
+	if p.match(lexing.COLON) {
+		tok := p.peek()
+
+		if tok.Type == lexing.KEYWORD || tok.Type == lexing.IDENTIFIER {
+			returnType = tok.Literal
+		} else {
+			p.error("Invalid function return type " + tok.Literal)
+		}
+
+		p.advance()
+	}
+
+	// Parse function body
+	if !p.match(lexing.LEFT_BRACE) {
+		p.error("Expected '{' after function declaration")
+		return nil
+	}
+
+	// Parse the function body
+	print("parsing function block...")
+	body := p.parseBlock()
+	if body == nil {
+		// Error already reported by parseBlock
+		return nil
+	}
+
+	// Consume the closing brace
+	if !p.match(lexing.RIGHT_BRACE) {
+		p.error("Expected '}' after function body")
+		return nil
+	}
+
+	return statement.NewFuncDeclaration(
+		name.Literal,
+		parameters,
+		returnType,
+		body,
+		startToken.Location,
+	)
+}
+
+// parseFuncParameter: Parses a function parameter
+// parseFuncParameter: Parses a function parameter
+func (p *Parser) parseFuncParameter() *expression.FuncParameterExpression {
+	name := p.consume(lexing.IDENTIFIER, "Expected parameter name")
+	if len(p.errors) > 0 {
+		return nil
+	}
+
+	// type
+	if !p.match(lexing.COLON) {
+		p.error("Expected ':' after parameter name")
+		return nil
+	}
+
+	typeToken := p.consume(lexing.IDENTIFIER, "Expected parameter type")
+	if len(p.errors) > 0 {
+		return nil
+	}
+
+	// Check for nullable type marker
+	isNullable := p.match(lexing.QMARK)
+
+	// optional default value
+	var defaultValue ast.Expression
+	if p.match(lexing.ASSIGN) {
+		defaultValue = p.parseExpression()
+		if defaultValue == nil {
+			p.error("Expected expression after '='")
+			return nil
+		}
+	}
+
+	return expression.NewFuncParameterExpression(
+		name.Literal,
+		typeToken.Literal,
+		isNullable,
+		name.Location,
+		defaultValue,
+	)
+}
+
 // parseExpression: Entry point for expression parsing
 func (p *Parser) parseExpression() ast.Expression {
 	return p.parseLogicalOr()
@@ -330,6 +584,7 @@ func (p *Parser) parseLogicalAnd() ast.Expression {
 
 // parseEquality parses equality expressions
 func (p *Parser) parseEquality() ast.Expression {
+	print("parseEquality()")
 	expr := p.parseComparison()
 
 	for p.match(lexing.EQUALS, lexing.NOT_EQUALS) {
@@ -424,6 +679,7 @@ func (p *Parser) parseUnary() ast.Expression {
 }
 
 // parseCall: Parses function calls
+// parseCall parses function calls and primary expressions
 func (p *Parser) parseCall() ast.Expression {
 	expr := p.parsePrimary()
 	if expr == nil {
@@ -433,9 +689,6 @@ func (p *Parser) parseCall() ast.Expression {
 	for {
 		if p.match(lexing.LEFT_PAREN) {
 			expr = p.finishCall(expr)
-			if expr == nil {
-				return nil
-			}
 		} else {
 			break
 		}
@@ -444,17 +697,17 @@ func (p *Parser) parseCall() ast.Expression {
 	return expr
 }
 
-// finishCall: Parses the arguments of a function call
+// finishCall handles the parsing of function call arguments after '(' has been matched
 func (p *Parser) finishCall(callee ast.Expression) ast.Expression {
-	arguments := make([]ast.Expression, 0)
-
+	args := make([]ast.Expression, 0)
 	if !p.check(lexing.RIGHT_PAREN) {
 		for {
 			arg := p.parseExpression()
 			if arg == nil {
+				p.error("Expected argument in function call")
 				return nil
 			}
-			arguments = append(arguments, arg)
+			args = append(args, arg)
 
 			if !p.match(lexing.COMMA) {
 				break
@@ -462,8 +715,16 @@ func (p *Parser) finishCall(callee ast.Expression) ast.Expression {
 		}
 	}
 
-	p.consume(lexing.RIGHT_PAREN, "Expected closing parenthesis")
-	return expression.NewCallExpression(callee, arguments, p.previous().Location)
+	if !p.match(lexing.RIGHT_PAREN) {
+		p.error("Expected ')' after function arguments")
+		return nil
+	}
+
+	return &expression.CallExpression{
+		Callee:    callee,
+		Arguments: args,
+		Location:  p.previous().Location,
+	}
 }
 
 // parsePrimary: Parses primary expressions (literals, identifiers, and parentheses)

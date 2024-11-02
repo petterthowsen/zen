@@ -190,7 +190,7 @@ func TestExpressionsFile(t *testing.T) {
 		}
 
 		stmt := program.Statements[i]
-		t.Logf("Checking declaration %d: %s", i, stmt.String(0))
+		//t.Logf("Checking declaration %d: %s", i, stmt.String(0))
 
 		varDecl := AssertVarDeclaration(t, stmt, exp.name, "", exp.isConst, false)
 		if varDecl == nil {

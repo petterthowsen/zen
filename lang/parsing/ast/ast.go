@@ -29,16 +29,20 @@ type Statement interface {
 
 // Visitor interface for implementing the visitor pattern
 type Visitor interface {
-	// Add visitor methods as we implement more node types
-	VisitProgram(node *ProgramNode) interface{}
+	VisitProgram(node ProgramNode) interface{}
 	VisitVarDecl(node Statement) interface{}
 	VisitLiteral(node Expression) interface{}
 	VisitBinary(node Expression) interface{}
 	VisitUnary(node Expression) interface{}
 	VisitIdentifier(node Expression) interface{}
 	VisitCall(node Expression) interface{}
+	VisitReturnStatement(node Statement) interface{}
 	VisitIfStatement(node Statement) interface{}
+	VisitIfConditionBlock(node Statement) interface{}
+	VisitElseBlock(node Statement) interface{}
 	VisitExpressionStatement(node Statement) interface{}
+	VisitFuncDeclaration(node Statement) interface{}
+	VisitFuncParameterExpression(node Expression) interface{}
 }
 
 // ProgramNode represents the root node of the AST
@@ -60,7 +64,7 @@ func NewProgramNode(statements []Statement) *ProgramNode {
 }
 
 func (n *ProgramNode) Accept(visitor Visitor) interface{} {
-	return visitor.VisitProgram(n)
+	return visitor.VisitProgram(*n)
 }
 
 func (n *ProgramNode) GetLocation() *common.SourceLocation {
@@ -77,9 +81,4 @@ func (n *ProgramNode) String(indent int) string {
 	}
 
 	return sb.String()
-}
-
-// Helper function to create indented strings
-func Indent(indent int) string {
-	return strings.Repeat("  ", indent)
 }
