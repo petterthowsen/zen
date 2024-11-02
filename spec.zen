@@ -9,20 +9,20 @@
 // Zen supports many features, including:
 // - Classes
 // - Interfaces
+// - Traits
 // - Functions
 // - Arrays
 // - Maps
 // - Tuples
 // - Loops
 // - Ranges
-// - Match statements
+// - For/While loops
+// - Powerful switch (called "when statements")
 // - Lambdas
-// - File Return Values and Structured Data Support
+// - file include with return values
 // - Importing from other files
-// - Interface Checking
-// - Variables and Primitive Types
-// - Mutable and Immutable Variables
-// - Smart nullable types
+// - Mutable and Immutable Variables (var and const)
+// - Smart nullable types (var nullable:string?)
 
 
 //---------------//
@@ -36,7 +36,7 @@ var name = "zen"
 // immutable variables can be declared using 'const':
 const awesome = true
 
-// zen is strictly typed: all variables an constants must have a defined type - except for the 'any' type.
+// zen is strictly typed: all variables and constants must have a defined type.
 // however, this is often not needed when declaring and assigning a value - the initial value infers the type.
 // so name is a string type and awesome is a bool type.
 

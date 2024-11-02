@@ -30,7 +30,7 @@ zenlang/
 
 ## Running Tests
 
-Tests are organized by component and include both unit tests and integration tests. Each test file has a corresponding `.zen` file containing the test cases.
+Tests are organized by component. Most test file have a corresponding `.zen` file containing the test cases.
 
 To run all tests:
 ```bash

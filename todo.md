@@ -6,10 +6,10 @@
   - [x] Type annotations (var name:type = value)
   - [x] Nullable types (var name:type? = value)
   - [x] Support for string, int, boolean, and null literals
-- [ ] Function declarations
-  - [ ] Parameters
-  - [ ] Return type
-  - [ ] Function body
+- [x] Function declarations
+  - [x] Parameters
+  - [x] Return type
+  - [x] Function body
 - [ ] Class declarations
   - [ ] Properties
   - [ ] Methods
@@ -18,11 +18,11 @@
   - [ ] Method signatures
   - [ ] Property signatures
 - [ ] Control flow
-  - [ ] If statements
+  - [x] If statements
   - [ ] For loops
   - [ ] While loops
   - [ ] When expressions
-  - [ ] Return statements
+  - [x] Return statements
 
 ## Expression Types
 - [x] Literals
@@ -64,7 +64,7 @@
 
 ## Testing
 - [x] Variable declaration tests
-- [ ] Function declaration tests
+- [x] Function declaration tests
 - [ ] Class declaration tests
 - [ ] Interface declaration tests
 - [x] Expression tests

@@ -50,7 +50,9 @@ func (p *Parser) Parse() (*ast.ProgramNode, []*common.SyntaxError) {
 		if stmt != nil {
 			statements = append(statements, stmt)
 		} else if len(p.errors) > 0 && !p.stopAtFirstError {
-			p.synchronize()
+			if !p.synchronize() {
+				break
+			}
 		}
 	}
 
@@ -65,10 +67,11 @@ func (p *Parser) Parse() (*ast.ProgramNode, []*common.SyntaxError) {
 }
 
 // synchronize skips tokens until a statement boundary is found
-func (p *Parser) synchronize() {
+// returns true if successful, false if not
+func (p *Parser) synchronize() bool {
 	for !p.isAtEnd() {
 		if p.check(lexing.EOF) {
-			return
+			return false
 		}
 
 		// If we're at a statement-starting keyword, we can start parsing again
@@ -76,11 +79,13 @@ func (p *Parser) synchronize() {
 			p.checkKeyword("func") || p.checkKeyword("class") ||
 			p.checkKeyword("if") || p.checkKeyword("for") ||
 			p.checkKeyword("while") || p.checkKeyword("return") || p.checkKeyword("when") {
-			return
 		}
 
 		p.advance()
+		return true
 	}
+
+	return false
 }
 
 // isAtEnd returns true if we've reached the end of the tokens
