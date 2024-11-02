@@ -480,7 +480,6 @@ func (p *Parser) parseFuncDeclaration() ast.Statement {
 	}
 
 	// Parse the function body
-	print("parsing function block...")
 	body := p.parseBlock()
 	if body == nil {
 		// Error already reported by parseBlock
@@ -584,7 +583,6 @@ func (p *Parser) parseLogicalAnd() ast.Expression {
 
 // parseEquality parses equality expressions
 func (p *Parser) parseEquality() ast.Expression {
-	print("parseEquality()")
 	expr := p.parseComparison()
 
 	for p.match(lexing.EQUALS, lexing.NOT_EQUALS) {

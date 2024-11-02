@@ -32,7 +32,6 @@ if (name == "john" and age > 20) or (name == "jane" and age > 40) {
 	}
 
 	// Now test parsing
-	t.Log("\nTesting parser...")
 	parser := parsing.NewParser(tokens, false)
 	program, errors := parser.Parse()
 	if len(errors) > 0 {
@@ -49,10 +48,8 @@ if (name == "john" and age > 20) or (name == "jane" and age > 40) {
 	}
 
 	t.Log("Program parsed successfully")
-	t.Logf("Found %d statements", len(program.Statements))
 
 	// Test basic if with boolean literal
-	t.Log("Testing first if statement (if true)")
 	stmt := program.Statements[0]
 	ifStmt := AssertIfStatement(t, stmt)
 	if ifStmt == nil {
@@ -62,7 +59,6 @@ if (name == "john" and age > 20) or (name == "jane" and age > 40) {
 	AssertLiteralExpression(t, ifStmt.PrimaryCondition, true)
 
 	// Test if with comparison
-	t.Log("Testing second if statement (if name == 'john' or age > 20)")
 	stmt = program.Statements[3]
 	ifStmt = AssertIfStatement(t, stmt)
 	if ifStmt == nil {
@@ -94,7 +90,6 @@ if (name == "john" and age > 20) or (name == "jane" and age > 40) {
 	AssertLiteralExpression(t, right.Right, int64(20))
 
 	// Test if with complex logical operations
-	t.Log("Testing third if statement (complex logical operations)")
 	stmt = program.Statements[4]
 	ifStmt = AssertIfStatement(t, stmt)
 	if ifStmt == nil {
@@ -132,6 +127,4 @@ if (name == "john" and age > 20) or (name == "jane" and age > 40) {
 	ageGt = AssertBinaryExpression(t, right.Right, ">")
 	AssertIdentifierExpression(t, ageGt.Left, "age")
 	AssertLiteralExpression(t, ageGt.Right, int64(40))
-
-	t.Log("All tests passed successfully")
 }

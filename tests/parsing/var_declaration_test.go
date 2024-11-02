@@ -34,7 +34,6 @@ func TestVarDeclarationFile(t *testing.T) {
 
 	for i, exp := range expectedDecls {
 		stmt := program.Statements[i]
-		t.Logf("Checking declaration %d: %s", i, stmt.String(0))
 		AssertVarDeclaration(t, stmt, exp.name, exp.typ, exp.isConst, exp.nullable)
 	}
 }
