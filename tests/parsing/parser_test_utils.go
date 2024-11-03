@@ -216,3 +216,130 @@ func AssertParseError(t *testing.T, input string) {
 		t.Errorf("Input %q: expected error, got none", input)
 	}
 }
+
+// BinaryCheck holds information for checking a binary expression
+type BinaryCheck struct {
+	LeftName   string
+	Operator   string
+	RightValue interface{}
+}
+
+// Check verifies a binary expression matches expected properties
+func (bc *BinaryCheck) Check(t *testing.T, expr *expression.BinaryExpression) {
+	if expr.Operator != bc.Operator {
+		t.Errorf("Expected operator '%s', got '%s'", bc.Operator, expr.Operator)
+	}
+
+	ident, ok := expr.Left.(*expression.IdentifierExpression)
+	if !ok {
+		t.Errorf("Expected IdentifierExpression, got %T", expr.Left)
+		return
+	}
+
+	if ident.Name != bc.LeftName {
+		t.Errorf("Expected identifier '%s', got '%s'", bc.LeftName, ident.Name)
+	}
+
+	literal, ok := expr.Right.(*expression.LiteralExpression)
+	if !ok {
+		t.Errorf("Expected LiteralExpression, got %T", expr.Right)
+		return
+	}
+
+	if literal.Value != bc.RightValue {
+		t.Errorf("Expected value %v, got %v", bc.RightValue, literal.Value)
+	}
+}
+
+// AssertBinaryAssignment checks if a statement is an assignment with expected properties
+func AssertBinaryAssignment(t *testing.T, stmt ast.Statement, varName string, operator string, rightValue interface{}) {
+	exprStmt, ok := stmt.(*statement.ExpressionStatement)
+	if !ok {
+		t.Errorf("Expected ExpressionStatement, got %T", stmt)
+		return
+	}
+
+	binary, ok := exprStmt.Expression.(*expression.BinaryExpression)
+	if !ok {
+		t.Errorf("Expected BinaryExpression, got %T", exprStmt.Expression)
+		return
+	}
+
+	if binary.Operator != "=" {
+		t.Errorf("Expected assignment operator '=', got '%s'", binary.Operator)
+	}
+
+	ident, ok := binary.Left.(*expression.IdentifierExpression)
+	if !ok {
+		t.Errorf("Expected IdentifierExpression, got %T", binary.Left)
+		return
+	}
+
+	if ident.Name != varName {
+		t.Errorf("Expected identifier '%s', got '%s'", varName, ident.Name)
+	}
+
+	// Handle different right-hand side patterns
+	switch v := rightValue.(type) {
+	case int64:
+		// Simple assignment: x = 5
+		literal, ok := binary.Right.(*expression.LiteralExpression)
+		if !ok {
+			t.Errorf("Expected LiteralExpression, got %T", binary.Right)
+			return
+		}
+		if literal.Value != v {
+			t.Errorf("Expected value %d, got %v", v, literal.Value)
+		}
+	case *BinaryCheck:
+		// Complex assignment: x = x + 2
+		rightBinary, ok := binary.Right.(*expression.BinaryExpression)
+		if !ok {
+			t.Errorf("Expected BinaryExpression, got %T", binary.Right)
+			return
+		}
+		v.Check(t, rightBinary)
+	}
+}
+
+// AssertBinaryComparison checks if an expression is a comparison with expected properties
+func AssertBinaryComparison(t *testing.T, expr ast.Expression, leftName string, operator string, rightValue interface{}) {
+	binary, ok := expr.(*expression.BinaryExpression)
+	if !ok {
+		t.Errorf("Expected BinaryExpression, got %T", expr)
+		return
+	}
+
+	if binary.Operator != operator {
+		t.Errorf("Expected operator '%s', got '%s'", operator, binary.Operator)
+	}
+
+	ident, ok := binary.Left.(*expression.IdentifierExpression)
+	if !ok {
+		t.Errorf("Expected IdentifierExpression, got %T", binary.Left)
+		return
+	}
+
+	if ident.Name != leftName {
+		t.Errorf("Expected identifier '%s', got '%s'", leftName, ident.Name)
+	}
+
+	literal, ok := binary.Right.(*expression.LiteralExpression)
+	if !ok {
+		t.Errorf("Expected LiteralExpression, got %T", binary.Right)
+		return
+	}
+
+	if literal.Value != rightValue {
+		t.Errorf("Expected value %v, got %v", rightValue, literal.Value)
+	}
+}
+
+// AssertIncrement checks if a statement is an increment operation (x = x + 1)
+func AssertIncrement(t *testing.T, stmt ast.Statement, varName string) {
+	AssertBinaryAssignment(t, stmt, varName, "=", &BinaryCheck{
+		LeftName:   varName,
+		Operator:   "+",
+		RightValue: int64(1),
+	})
+}

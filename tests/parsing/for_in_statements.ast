@@ -1,0 +1,67 @@
+Program
+  ForInStatement
+    Value: value
+    Container:
+      Identifier: items
+    Body:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: value
+  ForInStatement
+    Key: key
+    Value: value
+    Container:
+      Identifier: items
+    Body:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: key
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: value
+  ForInStatement
+    Value: item
+    Container:
+      Call
+        Callee:
+          Identifier: getItems
+    Body:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: item
+  ForInStatement
+    Key: k
+    Value: v
+    Container:
+      Identifier: users
+    Body:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: k
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: v
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Literal: ---

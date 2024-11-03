@@ -44,6 +44,9 @@ type Visitor interface {
 	VisitFuncDeclaration(node Statement) interface{}
 	VisitFuncParameterExpression(node Expression) interface{}
 	VisitForStatement(node Statement) interface{}
+	VisitForInStatement(node Statement) interface{}
+	VisitBreakStatement(node Statement) interface{}
+	VisitContinueStatement(node Statement) interface{}
 	VisitPostfix(node Expression) interface{}
 }
 

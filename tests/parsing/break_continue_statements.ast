@@ -1,0 +1,174 @@
+Program
+  ForStatement
+    Init:
+      ExpressionStatement
+        Binary: =
+          Identifier: i
+          Literal: 0
+    Condition:
+      Binary: <
+        Identifier: i
+        Literal: 10
+    Increment:
+      ExpressionStatement
+        Binary: =
+          Identifier: i
+          Binary: +
+            Identifier: i
+            Literal: 1
+    Body:
+      If
+        Primary Condition:
+          Binary: ==
+            Identifier: i
+            Literal: 5
+        Primary Block:
+          Break
+        Else If Blocks:
+        Else Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: i
+  ForStatement
+    Init:
+      ExpressionStatement
+        Binary: =
+          Identifier: i
+          Literal: 0
+    Condition:
+      Binary: <
+        Identifier: i
+        Literal: 10
+    Increment:
+      ExpressionStatement
+        Binary: =
+          Identifier: i
+          Binary: +
+            Identifier: i
+            Literal: 1
+    Body:
+      If
+        Primary Condition:
+          Binary: <
+            Identifier: i
+            Literal: 5
+        Primary Block:
+          Continue
+        Else If Blocks:
+        Else Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: i
+  ForInStatement
+    Value: value
+    Container:
+      Identifier: items
+    Body:
+      If
+        Primary Condition:
+          Binary: ==
+            Identifier: value
+            Literal: stop
+        Primary Block:
+          Break
+        Else If Blocks:
+        Else Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: value
+  ForInStatement
+    Key: key
+    Value: value
+    Container:
+      Identifier: items
+    Body:
+      If
+        Primary Condition:
+          Binary: ==
+            Identifier: key
+            Literal: skip
+        Primary Block:
+          Continue
+        Else If Blocks:
+        Else Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: value
+  ForStatement
+    Init:
+      ExpressionStatement
+        Binary: =
+          Identifier: i
+          Literal: 0
+    Condition:
+      Binary: <
+        Identifier: i
+        Literal: 5
+    Increment:
+      ExpressionStatement
+        Binary: =
+          Identifier: i
+          Binary: +
+            Identifier: i
+            Literal: 1
+    Body:
+      ForStatement
+        Init:
+          ExpressionStatement
+            Binary: =
+              Identifier: j
+              Literal: 0
+        Condition:
+          Binary: <
+            Identifier: j
+            Literal: 5
+        Increment:
+          ExpressionStatement
+            Binary: =
+              Identifier: j
+              Binary: +
+                Identifier: j
+                Literal: 1
+        Body:
+          If
+            Primary Condition:
+              Binary: ==
+                Identifier: i
+                Literal: 2
+            Primary Block:
+              Break
+            Else If Blocks:
+            Else Block:
+          If
+            Primary Condition:
+              Binary: ==
+                Identifier: j
+                Literal: 2
+            Primary Block:
+              Continue
+            Else If Blocks:
+            Else Block:
+          ExpressionStatement
+            Call
+              Callee:
+                Identifier: print
+              Arguments:
+                Identifier: i
+          ExpressionStatement
+            Call
+              Callee:
+                Identifier: print
+              Arguments:
+                Identifier: j

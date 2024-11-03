@@ -1,0 +1,22 @@
+// Basic for-in loop with single value
+for value in items {
+    print(value)
+}
+
+// For-in loop with key and value
+for key, value in items {
+    print(key)
+    print(value)
+}
+
+// For-in loop with complex container expression
+for item in getItems() {
+    print(item)
+}
+
+// For-in loop with multiple statements in body
+for k, v in users {
+    print(k)
+    print(v)
+    print("---")
+}

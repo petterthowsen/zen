@@ -1,0 +1,45 @@
+// Break in traditional for loop
+for i = 0; i < 10; i++ {
+    if i == 5 {
+        break
+    }
+    print(i)
+}
+
+// Continue in traditional for loop
+for i = 0; i < 10; i++ {
+    if i < 5 {
+        continue
+    }
+    print(i)
+}
+
+// Break in for-in loop
+for value in items {
+    if value == "stop" {
+        break
+    }
+    print(value)
+}
+
+// Continue in for-in loop
+for key, value in items {
+    if key == "skip" {
+        continue
+    }
+    print(value)
+}
+
+// Nested loops with break and continue
+for i = 0; i < 5; i++ {
+    for j = 0; j < 5; j++ {
+        if i == 2 {
+            break
+        }
+        if j == 2 {
+            continue
+        }
+        print(i)
+        print(j)
+    }
+}

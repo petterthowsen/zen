@@ -25,7 +25,36 @@ func (p *Parser) parseStatement() ast.Statement {
 
 	// For Statement
 	if p.matchKeyword("for") {
+		// Look ahead to determine if this is a for-in loop
+		isForIn := false
+		current := p.current
+
+		// Skip first identifier
+		if p.check(lexing.IDENTIFIER) {
+			p.advance()
+			// Check for comma or 'in'
+			if p.check(lexing.COMMA) || p.checkKeyword("in") {
+				isForIn = true
+			}
+		}
+
+		// Reset position
+		p.current = current
+
+		if isForIn {
+			return p.parseForInStatement()
+		}
 		return p.parseForStatement()
+	}
+
+	// Break Statement
+	if p.matchKeyword("break") {
+		return p.parseBreakStatement()
+	}
+
+	// Continue Statement
+	if p.matchKeyword("continue") {
+		return p.parseContinueStatement()
 	}
 
 	// Return statement
