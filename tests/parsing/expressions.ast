@@ -82,3 +82,69 @@ Program
         Call
           Callee:
             Identifier: myFunc
+  Var Declaration
+    Name: x
+    Initializer:
+      Literal: 5
+  ExpressionStatement
+    Binary: =
+      Identifier: x
+      Binary: +
+        Identifier: x
+        Literal: 3
+  ExpressionStatement
+    Binary: =
+      Identifier: x
+      Binary: -
+        Identifier: x
+        Literal: 2
+  ExpressionStatement
+    Binary: =
+      Identifier: x
+      Binary: *
+        Identifier: x
+        Literal: 4
+  ExpressionStatement
+    Binary: =
+      Identifier: x
+      Binary: /
+        Identifier: x
+        Literal: 2
+  Var Declaration
+    Name: i
+    Initializer:
+      Literal: 0
+  ExpressionStatement
+    Binary: =
+      Identifier: i
+      Binary: +
+        Identifier: i
+        Literal: 1
+  ExpressionStatement
+    Binary: =
+      Identifier: i
+      Binary: -
+        Identifier: i
+        Literal: 1
+  Var Declaration
+    Name: j
+    Initializer:
+      Literal: 10
+  ExpressionStatement
+    Binary: =
+      Identifier: j
+      Binary: +
+        Identifier: j
+        Literal: 5
+  ExpressionStatement
+    Binary: =
+      Identifier: j
+      Binary: +
+        Identifier: j
+        Literal: 1
+  ExpressionStatement
+    Binary: =
+      Identifier: j
+      Binary: *
+        Identifier: j
+        Literal: 2

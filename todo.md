@@ -18,10 +18,10 @@
   - [ ] Method signatures
   - [ ] Property signatures
 - [ ] Control flow
-  - [x] If statements
+  - [x] If statements with complex conditions
   - [ ] For loops
   - [ ] While loops
-  - [ ] When expressions
+  - [ ] When statements
   - [x] Return statements
 
 ## Expression Types
@@ -33,8 +33,8 @@
   - [x] Float literals
 - [x] Binary expressions
   - [x] Arithmetic operators (+, -, *, /, %)
-  - [ ] Comparison operators (==, !=, <, >, <=, >=)
-  - [ ] Logical operators (and, or)
+  - [x] Comparison operators (==, !=, <, >, <=, >=)
+  - [x] Logical operators (and, or)
 - [x] Unary expressions
   - [x] Negation (-)
   - [x] Not (not)
@@ -47,10 +47,10 @@
 ## Error Handling
 - [x] Basic error recovery
 - [x] Source location tracking
-- [x] Error synchronization
-- [ ] Multiple error reporting
+- [ ] Error synchronization
+- [x] Multiple error reporting (but synchronization isn't working)
 - [ ] Better error messages
-  - [ ] Expected vs actual token
+  - [x] Expected vs actual token
   - [ ] Suggestions for common mistakes
   - [ ] Context-aware hints
 

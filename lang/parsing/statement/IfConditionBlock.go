@@ -6,6 +6,8 @@ import (
 	"zen/lang/parsing/ast"
 )
 
+// IfConditionBlock represents: [condition] { [body] }
+// see IfStatement for the statement that encapsulates a complete if statement with else if and else blocks.
 type IfConditionBlock struct {
 	Location  *common.SourceLocation
 	Condition ast.Expression

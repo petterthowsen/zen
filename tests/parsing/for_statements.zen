@@ -1,0 +1,16 @@
+// Basic traditional for loop
+// "var" should be implied so not neccecary to explicitly write
+for i = 0; i < 10; i++ {
+    print(i)
+}
+
+// For loop with expression initialization
+for x = 0; x < 5; x = x + 2 {
+    print(x)
+}
+
+// For loop with multiple statements in body
+for i = 0; i < 3; i++ {
+    print(i)
+    print("Hello")
+}

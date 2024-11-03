@@ -1,0 +1,79 @@
+Program
+  ForStatement
+    Init:
+      ExpressionStatement
+        Binary: =
+          Identifier: i
+          Literal: 0
+    Condition:
+      Binary: <
+        Identifier: i
+        Literal: 10
+    Increment:
+      ExpressionStatement
+        Binary: =
+          Identifier: i
+          Binary: +
+            Identifier: i
+            Literal: 1
+    Body:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: i
+  ForStatement
+    Init:
+      ExpressionStatement
+        Binary: =
+          Identifier: x
+          Literal: 0
+    Condition:
+      Binary: <
+        Identifier: x
+        Literal: 5
+    Increment:
+      ExpressionStatement
+        Binary: =
+          Identifier: x
+          Binary: +
+            Identifier: x
+            Literal: 2
+    Body:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: x
+  ForStatement
+    Init:
+      ExpressionStatement
+        Binary: =
+          Identifier: i
+          Literal: 0
+    Condition:
+      Binary: <
+        Identifier: i
+        Literal: 3
+    Increment:
+      ExpressionStatement
+        Binary: =
+          Identifier: i
+          Binary: +
+            Identifier: i
+            Literal: 1
+    Body:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: i
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Literal: Hello

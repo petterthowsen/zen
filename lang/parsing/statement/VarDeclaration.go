@@ -8,6 +8,7 @@ import (
 )
 
 // VarDeclarationNode represents a variable or constant declaration in the AST
+// it can optionally be constant (const), have a type, be nullable and/or have an initializer
 type VarDeclarationNode struct {
 	Name        string
 	Type        string // Optional type annotation

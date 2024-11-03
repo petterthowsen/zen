@@ -43,6 +43,8 @@ type Visitor interface {
 	VisitExpressionStatement(node Statement) interface{}
 	VisitFuncDeclaration(node Statement) interface{}
 	VisitFuncParameterExpression(node Expression) interface{}
+	VisitForStatement(node Statement) interface{}
+	VisitPostfix(node Expression) interface{}
 }
 
 // ProgramNode represents the root node of the AST
