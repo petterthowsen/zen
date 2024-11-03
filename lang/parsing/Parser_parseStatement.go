@@ -47,6 +47,11 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseForStatement()
 	}
 
+	// While Statement
+	if p.matchKeyword("while") {
+		return p.parseWhileStatement()
+	}
+
 	// Break Statement
 	if p.matchKeyword("break") {
 		return p.parseBreakStatement()

@@ -47,6 +47,7 @@ type Visitor interface {
 	VisitForInStatement(node Statement) interface{}
 	VisitBreakStatement(node Statement) interface{}
 	VisitContinueStatement(node Statement) interface{}
+	VisitWhileStatement(node Statement) interface{}
 	VisitPostfix(node Expression) interface{}
 }
 

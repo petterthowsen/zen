@@ -1,0 +1,154 @@
+Program
+  WhileStatement
+    Condition:
+      Binary: <
+        Identifier: x
+        Literal: 10
+    Body:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: x
+      ExpressionStatement
+        Binary: =
+          Identifier: x
+          Binary: +
+            Identifier: x
+            Literal: 1
+  WhileStatement
+    Condition:
+      Literal: true
+    Body:
+      If
+        Primary Condition:
+          Binary: >
+            Identifier: x
+            Literal: 100
+        Primary Block:
+          Break
+        Else If Blocks:
+        Else Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: x
+      ExpressionStatement
+        Binary: =
+          Identifier: x
+          Binary: +
+            Identifier: x
+            Literal: 1
+  WhileStatement
+    Condition:
+      Binary: <
+        Identifier: y
+        Literal: 20
+    Body:
+      ExpressionStatement
+        Binary: =
+          Identifier: y
+          Binary: +
+            Identifier: y
+            Literal: 1
+      If
+        Primary Condition:
+          Binary: <
+            Identifier: y
+            Literal: 10
+        Primary Block:
+          Continue
+        Else If Blocks:
+        Else Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: y
+  WhileStatement
+    Condition:
+      Binary: and
+        Binary: >
+          Identifier: x
+          Literal: 0
+        Binary: <
+          Identifier: y
+          Literal: 100
+    Body:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: x
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Identifier: y
+      ExpressionStatement
+        Binary: =
+          Identifier: x
+          Binary: -
+            Identifier: x
+            Literal: 1
+      ExpressionStatement
+        Binary: =
+          Identifier: y
+          Binary: +
+            Identifier: y
+            Literal: 1
+  WhileStatement
+    Condition:
+      Binary: <
+        Identifier: i
+        Literal: 5
+    Body:
+      ExpressionStatement
+        Binary: =
+          Identifier: j
+          Literal: 0
+      WhileStatement
+        Condition:
+          Binary: <
+            Identifier: j
+            Literal: 3
+        Body:
+          If
+            Primary Condition:
+              Binary: ==
+                Identifier: i
+                Literal: 2
+            Primary Block:
+              Break
+            Else If Blocks:
+            Else Block:
+          ExpressionStatement
+            Call
+              Callee:
+                Identifier: print
+              Arguments:
+                Identifier: i
+          ExpressionStatement
+            Call
+              Callee:
+                Identifier: print
+              Arguments:
+                Identifier: j
+          ExpressionStatement
+            Binary: =
+              Identifier: j
+              Binary: +
+                Identifier: j
+                Literal: 1
+      ExpressionStatement
+        Binary: =
+          Identifier: i
+          Binary: +
+            Identifier: i
+            Literal: 1
