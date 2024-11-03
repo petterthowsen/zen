@@ -19,8 +19,8 @@
   - [ ] Property signatures
 - [ ] Control flow
   - [x] If statements with complex conditions
-  - [ ] For loops
-  - [ ] While loops
+  - [x] For loops
+  - [x] While loops
   - [ ] When statements
   - [x] Return statements
 
@@ -38,7 +38,7 @@
 - [x] Unary expressions
   - [x] Negation (-)
   - [x] Not (not)
-- [ ] Member access (obj.prop)
+- [x] Member access (obj.prop)
 - [x] Function calls
 - [ ] Array literals and access
 - [ ] Map literals and access

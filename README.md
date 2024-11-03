@@ -19,7 +19,21 @@ zenlang/
 │   └── parsing/           # Syntax analysis
 │       ├── ast/              # Abstract Syntax Tree definitions
 │       ├── expression/       # Expression nodes
+│       │   ├── BinaryExpression.go     # Binary operations
+│       │   ├── CallExpression.go       # Function calls
+│       │   ├── LiteralExpression.go    # Literals
+│       │   ├── MemberAccessExpression.go # Object property access
+│       │   └── UnaryExpression.go      # Unary operations
 │       ├── statement/        # Statement nodes
+│       │   ├── BreakStatement.go       # Break from loops
+│       │   ├── ContinueStatement.go    # Continue in loops
+│       │   ├── ForStatement.go         # For loops
+│       │   ├── ForInStatement.go       # For-in loops
+│       │   ├── FuncDeclaration.go      # Function declarations
+│       │   ├── IfStatement.go          # If conditions
+│       │   ├── ReturnStatement.go      # Return statements
+│       │   ├── VarDeclaration.go       # Variable declarations
+│       │   └── WhileStatement.go       # While loops
 │       └── Parser.go         # Parser implementation
 ├── tests/                 # Test suite
 │   ├── lexing/           # Lexer tests
@@ -28,9 +42,30 @@ zenlang/
 └── grammar.ebnf          # Formal grammar definition
 ```
 
+## Features
+
+### Control Flow
+- If statements with complex conditions
+- For loops with initialization, condition, and increment
+- For-in loops for iteration
+- While loops
+- Break and continue statements
+- Return statements
+
+### Expressions
+- Literals (string, integer, float, boolean, null)
+- Binary operations (+, -, *, /, %, ==, !=, <, >, <=, >=, and, or)
+- Unary operations (-, not)
+- Member access (obj.prop, obj.nested.prop)
+- Function calls
+
+### Declarations
+- Variable declarations with type annotations and nullability
+- Function declarations with parameters and return types
+
 ## Running Tests
 
-Tests are organized by component. Most test file have a corresponding `.zen` file containing the test cases.
+Tests are organized by component. Most test files have a corresponding `.zen` file containing the test cases.
 
 To run all tests:
 ```bash
@@ -80,6 +115,11 @@ binary := AssertBinaryExpression(t, expr, "+")
 unary := AssertUnaryExpression(t, expr, "-")
 ident := AssertIdentifierExpression(t, expr, "varName")
 call := AssertCallExpression(t, expr, expectedArgCount)
+member := AssertMemberAccess(t, expr, "object", "property")
+
+// Assert statements
+ifStmt := AssertIfStatement(t, stmt)
+funcDecl := AssertFuncDeclaration(t, stmt)
 
 // Assert parsing errors
 AssertParseError(t, "invalid { syntax")
@@ -210,4 +250,4 @@ p.error("Expected { after new feature declaration")
 
 ## License
 
-[License information here]
+MIT

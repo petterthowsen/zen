@@ -1,0 +1,26 @@
+// Basic member access
+var name = person.name
+var age = user.age
+
+// Chained member access
+var city = person.address.city
+
+// Member access with function calls
+var length = name.length()
+var items = list.getItems()
+
+// Member access in expressions
+var fullName = person.firstName + " " + person.lastName
+
+// Member access in assignments
+person.age = 25
+user.contact.email = "test@example.com"
+
+// Member access in conditions
+if person.age > 18 {
+    print(person.name)
+}
+
+// Member access in function calls
+print(user.getFullName())
+validate(person.address.isValid())

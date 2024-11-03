@@ -1,0 +1,87 @@
+Program
+  Var Declaration
+    Name: name
+    Initializer:
+      MemberAccess(name)
+        Identifier: person
+  Var Declaration
+    Name: age
+    Initializer:
+      MemberAccess(age)
+        Identifier: user
+  Var Declaration
+    Name: city
+    Initializer:
+      MemberAccess(city)
+        MemberAccess(address)
+          Identifier: person
+  Var Declaration
+    Name: length
+    Initializer:
+      Call
+        Callee:
+          MemberAccess(length)
+            Identifier: name
+  Var Declaration
+    Name: items
+    Initializer:
+      Call
+        Callee:
+          MemberAccess(getItems)
+            Identifier: list
+  Var Declaration
+    Name: fullName
+    Initializer:
+      Binary: +
+        Binary: +
+          MemberAccess(firstName)
+            Identifier: person
+          Literal:  
+        MemberAccess(lastName)
+          Identifier: person
+  ExpressionStatement
+    Binary: =
+      MemberAccess(age)
+        Identifier: person
+      Literal: 25
+  ExpressionStatement
+    Binary: =
+      MemberAccess(email)
+        MemberAccess(contact)
+          Identifier: user
+      Literal: test@example.com
+  If
+    Primary Condition:
+      Binary: >
+        MemberAccess(age)
+          Identifier: person
+        Literal: 18
+    Primary Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            MemberAccess(name)
+              Identifier: person
+    Else If Blocks:
+    Else Block:
+  ExpressionStatement
+    Call
+      Callee:
+        Identifier: print
+      Arguments:
+        Call
+          Callee:
+            MemberAccess(getFullName)
+              Identifier: user
+  ExpressionStatement
+    Call
+      Callee:
+        Identifier: validate
+      Arguments:
+        Call
+          Callee:
+            MemberAccess(isValid)
+              MemberAccess(address)
+                Identifier: person

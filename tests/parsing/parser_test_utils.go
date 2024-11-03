@@ -217,6 +217,78 @@ func AssertParseError(t *testing.T, input string) {
 	}
 }
 
+// AssertMemberAccess checks if an expression is a member access with expected properties
+func AssertMemberAccess(t *testing.T, expr ast.Expression, objectName string, propertyName string) *expression.MemberAccessExpression {
+	memberAccess, ok := expr.(*expression.MemberAccessExpression)
+	if !ok {
+		t.Errorf("Expected MemberAccessExpression, got %T", expr)
+		return nil
+	}
+
+	if memberAccess.Property != propertyName {
+		t.Errorf("Expected property name '%s', got '%s'", propertyName, memberAccess.Property)
+	}
+
+	// Object can be either an identifier or another member access expression
+	switch obj := memberAccess.Object.(type) {
+	case *expression.IdentifierExpression:
+		if obj.Name != objectName {
+			t.Errorf("Expected object name '%s', got '%s'", objectName, obj.Name)
+		}
+	case *expression.MemberAccessExpression:
+		// For chained access, we only check the property name
+		// The full chain should be checked with AssertChainedMemberAccess
+		if obj.Property != objectName {
+			t.Errorf("Expected object property '%s', got '%s'", objectName, obj.Property)
+		}
+	default:
+		t.Errorf("Expected IdentifierExpression or MemberAccessExpression for object, got %T", memberAccess.Object)
+		return nil
+	}
+
+	return memberAccess
+}
+
+// AssertChainedMemberAccess checks if an expression is a chained member access
+func AssertChainedMemberAccess(t *testing.T, expr ast.Expression, chain ...string) ast.Expression {
+	if len(chain) < 2 {
+		t.Error("Chain must have at least 2 elements")
+		return nil
+	}
+
+	// For chained access like person.address.city, we get MemberAccess nodes
+	// nested from right to left, so we traverse them in reverse
+	current := expr
+	for i := len(chain) - 1; i > 0; i-- {
+		memberAccess, ok := current.(*expression.MemberAccessExpression)
+		if !ok {
+			t.Errorf("Expected MemberAccessExpression at chain index %d, got %T", i, current)
+			return nil
+		}
+
+		if memberAccess.Property != chain[i] {
+			t.Errorf("Expected property name '%s' at chain index %d, got '%s'", chain[i], i, memberAccess.Property)
+			return nil
+		}
+
+		if i == len(chain)-1 {
+			// First level should have an identifier as object
+			ident, ok := memberAccess.Object.(*expression.IdentifierExpression)
+			if !ok {
+				t.Errorf("Expected IdentifierExpression for first object, got %T", memberAccess.Object)
+				return nil
+			}
+			if ident.Name != chain[0] {
+				t.Errorf("Expected object name '%s', got '%s'", chain[0], ident.Name)
+			}
+		}
+
+		current = memberAccess.Object
+	}
+
+	return expr
+}
+
 // BinaryCheck holds information for checking a binary expression
 type BinaryCheck struct {
 	LeftName   string

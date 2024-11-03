@@ -207,7 +207,7 @@ func (p *Parser) parsePostfix() ast.Expression {
 	return expr
 }
 
-// parseCall: Parses function calls
+// parseCall: Parses function calls and member access
 func (p *Parser) parseCall() ast.Expression {
 	expr := p.parsePrimary()
 	if expr == nil {
@@ -217,6 +217,15 @@ func (p *Parser) parseCall() ast.Expression {
 	for {
 		if p.match(lexing.LEFT_PAREN) {
 			expr = p.finishCall(expr)
+		} else if p.match(lexing.DOT) {
+			// Handle member access (obj.prop)
+			if !p.check(lexing.IDENTIFIER) {
+				p.error("Expected property name after '.'")
+				return nil
+			}
+			name := p.advance()
+			// Build member access from left to right
+			expr = expression.NewMemberAccessExpression(expr, name.Literal, name.Location)
 		} else {
 			break
 		}
