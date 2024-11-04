@@ -2,6 +2,7 @@ package parsing
 
 import (
 	"testing"
+	"zen/lang/parsing/ast"
 )
 
 func TestVarDeclarationFile(t *testing.T) {
@@ -13,7 +14,7 @@ func TestVarDeclarationFile(t *testing.T) {
 	// Verify basic structure
 	expectedDecls := []struct {
 		name     string
-		typ      string
+		typ      string // empty string means no type annotation
 		isConst  bool
 		nullable bool
 	}{
@@ -34,7 +35,16 @@ func TestVarDeclarationFile(t *testing.T) {
 
 	for i, exp := range expectedDecls {
 		stmt := program.Statements[i]
-		AssertVarDeclaration(t, stmt, exp.name, exp.typ, exp.isConst, exp.nullable)
+		if exp.typ == "" {
+			// No type annotation
+			AssertVarDeclaration(t, stmt, exp.name, exp.isConst, exp.nullable)
+		} else {
+			// Has type annotation
+			AssertVarDeclarationWithType(t, stmt, exp.name, exp.isConst, exp.nullable,
+				func(t *testing.T, typ ast.Expression) {
+					AssertBasicType(t, typ, exp.typ)
+				})
+		}
 	}
 }
 

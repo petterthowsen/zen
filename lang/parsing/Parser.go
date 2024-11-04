@@ -168,7 +168,7 @@ func (p *Parser) error(message string) {
 
 // errorAtToken adds a SyntaxError at the specified token
 func (p *Parser) errorAtToken(token lexing.Token, message string) {
-	err := common.NewSyntaxError(message, token.Location)
+	err := common.NewSyntaxError(message+" (got '"+token.Literal+"')", token.Location)
 	p.errors = append(p.errors, err)
 
 	if p.stopAtFirstError {

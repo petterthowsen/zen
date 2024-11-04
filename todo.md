@@ -23,6 +23,9 @@
   - [x] While loops
   - [ ] When statements
   - [x] Return statements
+- [ ] Exceptions
+  - [ ] Throw statements
+  - [ ] Try / Catch statements
 
 ## Expression Types
 - [x] Literals
@@ -55,12 +58,17 @@
   - [ ] Context-aware hints
 
 ## Type System
-- [ ] Basic type checking
-- [ ] Type inference
-- [ ] Generic types
+- [x] Generic types
+  - [x] Simple parametric types (Array<int>)
+  - [x] Multiple parameters (Grid<int, 3, 4>)
+  - [x] Nested types (Array<Array<int, 3>, 2>)
+  - [x] Mixed type and value parameters (Array<string, 10>)
 - [ ] Union types
 - [ ] Nullable type handling
+## Type checking (Should be done after parsing stage)
 - [ ] Type compatibility rules
+- [ ] Basic type checking
+- [ ] Type inference
 
 ## Testing
 - [x] Variable declaration tests

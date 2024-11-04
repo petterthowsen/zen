@@ -1,0 +1,28 @@
+// Basic type annotations
+var a : int
+var b : string
+var c : float64
+
+// Nullable types
+var d : int?
+var e : string?
+
+// Array types with size
+var arr1 : Array<int, 5>
+var arr2 : Array<string, 10>
+
+// Array types with type only
+var nums : Array<int>
+var strs : Array<string>
+
+// Map types
+var scores : Map<string, int>
+var config : Map<string, any>
+
+// Nested parametric types
+var matrix : Array<Array<int, 3>, 2>
+var nested : Map<string, Array<int, 5>>
+
+// Multiple parameters
+var grid : Grid<int, 3, 4>  // 3x4 grid of integers
+var cube : Grid<float64, 2, 2, 2>  // 2x2x2 cube of floats

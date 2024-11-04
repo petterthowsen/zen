@@ -101,6 +101,7 @@ var tokenTypeNames = map[TokenType]string{
 
 var keywords = []string{
 	"import",
+	"from",
 	"package",
 
 	"var",

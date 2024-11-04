@@ -11,7 +11,7 @@ import (
 // it can optionally be constant (const), have a type, be nullable and/or have an initializer
 type VarDeclarationNode struct {
 	Name        string
-	Type        string // Optional type annotation
+	Type        ast.Expression // Can be either string literal (simple type) or ParametricType
 	Initializer ast.Expression
 	IsConstant  bool
 	IsNullable  bool
@@ -21,7 +21,7 @@ type VarDeclarationNode struct {
 // NewVarDeclarationNode creates a new VarDeclarationNode instance.
 func NewVarDeclarationNode(
 	name string,
-	typ string,
+	typ ast.Expression,
 	initializer ast.Expression,
 	isConstant bool,
 	isNullable bool,
@@ -61,8 +61,9 @@ func (n *VarDeclarationNode) String(indent int) string {
 
 	// Write name and type
 	sb.WriteString(fmt.Sprintf("%s  Name: %s\n", indentStr, n.Name))
-	if n.Type != "" {
-		sb.WriteString(fmt.Sprintf("%s  Type: %s\n", indentStr, n.Type))
+	if n.Type != nil {
+		sb.WriteString(fmt.Sprintf("%s  Type:\n", indentStr))
+		sb.WriteString(n.Type.String(indent + 2))
 	}
 
 	// Write initializer if present

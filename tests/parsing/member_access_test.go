@@ -11,19 +11,19 @@ func TestMemberAccess(t *testing.T) {
 	if program == nil {
 		return
 	}
-	// The following tests are fine
+
 	// Basic member access: person.name
-	AssertVarDeclaration(t, program.Statements[0], "name", "", false, false)
+	AssertVarDeclaration(t, program.Statements[0], "name", false, false)
 	varDecl := program.Statements[0].(*statement.VarDeclarationNode)
 	AssertMemberAccess(t, varDecl.Initializer, "person", "name")
 
 	// Another basic member access: user.age
-	AssertVarDeclaration(t, program.Statements[1], "age", "", false, false)
+	AssertVarDeclaration(t, program.Statements[1], "age", false, false)
 	varDecl = program.Statements[1].(*statement.VarDeclarationNode)
 	AssertMemberAccess(t, varDecl.Initializer, "user", "age")
 
 	// Chained member access: person.address.city
-	AssertVarDeclaration(t, program.Statements[2], "city", "", false, false)
+	AssertVarDeclaration(t, program.Statements[2], "city", false, false)
 	varDecl = program.Statements[2].(*statement.VarDeclarationNode)
 	memberAccess := varDecl.Initializer.(*expression.MemberAccessExpression)
 	if memberAccess.Property != "city" {
@@ -39,19 +39,19 @@ func TestMemberAccess(t *testing.T) {
 	}
 
 	// Member access with function calls: name.length()
-	AssertVarDeclaration(t, program.Statements[3], "length", "", false, false)
+	AssertVarDeclaration(t, program.Statements[3], "length", false, false)
 	varDecl = program.Statements[3].(*statement.VarDeclarationNode)
 	call := varDecl.Initializer.(*expression.CallExpression)
 	AssertMemberAccess(t, call.Callee, "name", "length")
 
 	// Member access with function calls: list.getItems()
-	AssertVarDeclaration(t, program.Statements[4], "items", "", false, false)
+	AssertVarDeclaration(t, program.Statements[4], "items", false, false)
 	varDecl = program.Statements[4].(*statement.VarDeclarationNode)
 	call = varDecl.Initializer.(*expression.CallExpression)
 	AssertMemberAccess(t, call.Callee, "list", "getItems")
 
 	// Member access in expressions: person.firstName + " " + person.lastName
-	AssertVarDeclaration(t, program.Statements[5], "fullName", "", false, false)
+	AssertVarDeclaration(t, program.Statements[5], "fullName", false, false)
 	varDecl = program.Statements[5].(*statement.VarDeclarationNode)
 	binary := varDecl.Initializer.(*expression.BinaryExpression)
 	leftBinary := binary.Left.(*expression.BinaryExpression)
@@ -84,9 +84,7 @@ func TestMemberAccess(t *testing.T) {
 	binary = ifStmt.PrimaryCondition.(*expression.BinaryExpression)
 	AssertMemberAccess(t, binary.Left, "person", "age")
 
-	// this one fails:
-
-	// Member access in function calls: print(person.name)
+	// Member access in if block: print(person.name)
 	exprStmt = ifStmt.PrimaryBlock[0].(*statement.ExpressionStatement)
 	call = exprStmt.Expression.(*expression.CallExpression)
 	AssertMemberAccess(t, call.Arguments[0], "person", "name")

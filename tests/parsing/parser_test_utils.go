@@ -46,6 +46,12 @@ func ParseFile(path string, content string) (*ast.ProgramNode, []error) {
 		return nil, []error{err}
 	}
 
+	// print tokens
+	// print("tokens:\n")
+	// for _, token := range tokens {
+	// 	print(token.String() + "\n")
+	// }
+
 	parser := parsing.NewParser(tokens, StopAtFirstError)
 	program, syntaxErrors := parser.Parse()
 
@@ -75,6 +81,17 @@ func ParseTestFile(t *testing.T, filename string) *ast.ProgramNode {
 	}
 
 	program, errors := ParseFile(path, string(content))
+
+	// Save AST to file regardless of errors
+	if program != nil {
+		astStr := program.String(0)
+		astPath := strings.TrimSuffix(path, ".zen") + ".ast"
+		if err := os.WriteFile(astPath, []byte(astStr), 0644); err != nil {
+			t.Logf("Warning: Failed to write AST file: %v", err)
+		}
+	}
+
+	// Report any errors
 	if len(errors) > 0 {
 		t.Errorf("Parser errors:")
 		for _, err := range errors {
@@ -88,18 +105,11 @@ func ParseTestFile(t *testing.T, filename string) *ast.ProgramNode {
 		return nil
 	}
 
-	// Save AST to file
-	astStr := program.String(0)
-	astPath := strings.TrimSuffix(path, ".zen") + ".ast"
-	if err := os.WriteFile(astPath, []byte(astStr), 0644); err != nil {
-		t.Logf("Warning: Failed to write AST file: %v", err)
-	}
-
 	return program
 }
 
 // AssertVarDeclaration checks if a statement is a variable declaration with expected properties
-func AssertVarDeclaration(t *testing.T, stmt ast.Statement, name string, typ string, isConst bool, nullable bool) *statement.VarDeclarationNode {
+func AssertVarDeclaration(t *testing.T, stmt ast.Statement, name string, isConst bool, nullable bool) *statement.VarDeclarationNode {
 	varDecl, ok := stmt.(*statement.VarDeclarationNode)
 	if !ok {
 		t.Errorf("Expected VarDeclarationNode, got %T", stmt)
@@ -110,10 +120,6 @@ func AssertVarDeclaration(t *testing.T, stmt ast.Statement, name string, typ str
 		t.Errorf("Expected name %q, got %q", name, varDecl.Name)
 	}
 
-	if varDecl.Type != typ {
-		t.Errorf("Expected type %q, got %q", typ, varDecl.Type)
-	}
-
 	if varDecl.IsConstant != isConst {
 		t.Errorf("Expected const=%v, got %v", isConst, varDecl.IsConstant)
 	}
@@ -122,6 +128,22 @@ func AssertVarDeclaration(t *testing.T, stmt ast.Statement, name string, typ str
 		t.Errorf("Expected nullable=%v, got %v", nullable, varDecl.IsNullable)
 	}
 
+	return varDecl
+}
+
+// AssertVarDeclarationWithType checks if a statement is a variable declaration with expected type
+func AssertVarDeclarationWithType(t *testing.T, stmt ast.Statement, name string, isConst bool, nullable bool, typeCheck func(t *testing.T, typ ast.Expression)) *statement.VarDeclarationNode {
+	varDecl := AssertVarDeclaration(t, stmt, name, isConst, nullable)
+	if varDecl == nil {
+		return nil
+	}
+
+	if varDecl.Type == nil {
+		t.Error("Expected type annotation, got nil")
+		return nil
+	}
+
+	typeCheck(t, varDecl.Type)
 	return varDecl
 }
 
@@ -198,6 +220,67 @@ func AssertCallExpression(t *testing.T, expr ast.Expression, expectedArgCount in
 		t.Errorf("Expected %d arguments, got %d", expectedArgCount, len(call.Arguments))
 	}
 	return call
+}
+
+// AssertBasicType checks if an expression is a basic type with expected name
+func AssertBasicType(t *testing.T, expr ast.Expression, expectedName string) *expression.BasicType {
+	basicType, ok := expr.(*expression.BasicType)
+	if !ok {
+		t.Errorf("Expected BasicType, got %T", expr)
+		return nil
+	}
+	if basicType.Name != expectedName {
+		t.Errorf("Expected type name '%s', got '%s'", expectedName, basicType.Name)
+	}
+	return basicType
+}
+
+// AssertParametricType checks if an expression is a parametric type with expected base type
+func AssertParametricType(t *testing.T, expr ast.Expression, expectedBaseType string, expectedParamCount int) *expression.ParametricType {
+	paramType, ok := expr.(*expression.ParametricType)
+	if !ok {
+		t.Errorf("Expected ParametricType, got %T", expr)
+		return nil
+	}
+	if paramType.BaseType != expectedBaseType {
+		t.Errorf("Expected base type '%s', got '%s'", expectedBaseType, paramType.BaseType)
+	}
+	if len(paramType.Parameters) != expectedParamCount {
+		t.Errorf("Expected %d parameters, got %d", expectedParamCount, len(paramType.Parameters))
+	}
+	return paramType
+}
+
+// AssertTypeParameter checks if a parameter is a type parameter with expected name
+func AssertTypeParameter(t *testing.T, param expression.Parameter, expectedName string) {
+	if !param.IsType {
+		t.Error("Expected type parameter, got value parameter")
+		return
+	}
+	name, ok := param.Value.(string)
+	if !ok {
+		t.Errorf("Expected string value, got %T", param.Value)
+		return
+	}
+	if name != expectedName {
+		t.Errorf("Expected type name '%s', got '%s'", expectedName, name)
+	}
+}
+
+// AssertValueParameter checks if a parameter is a value parameter with expected value
+func AssertValueParameter(t *testing.T, param expression.Parameter, expectedValue int64) {
+	if param.IsType {
+		t.Error("Expected value parameter, got type parameter")
+		return
+	}
+	value, ok := param.Value.(int64)
+	if !ok {
+		t.Errorf("Expected int64 value, got %T", param.Value)
+		return
+	}
+	if value != expectedValue {
+		t.Errorf("Expected value %d, got %d", expectedValue, value)
+	}
 }
 
 func AssertFuncDeclaration(t *testing.T, stmt ast.Statement) *statement.FuncDeclaration {

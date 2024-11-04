@@ -1,0 +1,47 @@
+Program
+  Var Declaration
+    Name: a
+    Type:
+      int  Var Declaration
+    Name: b
+    Type:
+      string  Var Declaration
+    Name: c
+    Type:
+      float64  Var Declaration
+    Name: d
+    Type:
+      int  Var Declaration
+    Name: e
+    Type:
+      string  Var Declaration
+    Name: arr1
+    Type:
+      Array<int, 5>  Var Declaration
+    Name: arr2
+    Type:
+      Array<string, 10>  Var Declaration
+    Name: nums
+    Type:
+      Array<int>  Var Declaration
+    Name: strs
+    Type:
+      Array<string>  Var Declaration
+    Name: scores
+    Type:
+      Map<string, int>  Var Declaration
+    Name: config
+    Type:
+      Map<string, any>  Var Declaration
+    Name: matrix
+    Type:
+      Array<Array<int, 3>, 2>  Var Declaration
+    Name: nested
+    Type:
+      Map<string, Array<int, 5>>  Var Declaration
+    Name: grid
+    Type:
+      Grid<int, 3, 4>  Var Declaration
+    Name: cube
+    Type:
+      Grid<float64, 2, 2, 2>

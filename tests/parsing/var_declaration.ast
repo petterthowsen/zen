@@ -13,26 +13,26 @@ Program
       Literal: true
   Var Declaration
     Name: title
-    Type: string
-    Initializer:
+    Type:
+      string    Initializer:
       Literal: Hello
   Var Declaration
     Name: count
-    Type: int
-    Initializer:
+    Type:
+      int    Initializer:
       Literal: 42
   Var Declaration
     Name: enabled
-    Type: bool
-    Initializer:
+    Type:
+      bool    Initializer:
       Literal: false
   Var Declaration
     Name: description
-    Type: string
-    Initializer:
+    Type:
+      string    Initializer:
       Literal: optional
   Var Declaration
     Name: quantity
-    Type: int
-    Initializer:
+    Type:
+      int    Initializer:
       Literal: <nil>

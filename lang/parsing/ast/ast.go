@@ -50,6 +50,8 @@ type Visitor interface {
 	VisitWhileStatement(node Statement) interface{}
 	VisitPostfix(node Expression) interface{}
 	VisitMemberAccess(node Expression) interface{}
+	VisitParametricType(node Expression) interface{}
+	VisitBasicType(node Expression) interface{}
 }
 
 // ProgramNode represents the root node of the AST

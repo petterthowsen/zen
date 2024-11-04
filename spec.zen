@@ -253,7 +253,7 @@ for i = 0; i < 10; i++ {
 }
 // prints 0123456789
 
-// and the standard while loop, which runs every time the condition is true
+// and the standard while loop, which runs once each time the condition is true
 while true {
     // infinite loop!
 }
@@ -280,9 +280,9 @@ for number in 2 {
 
 // if you want to specify the starting number:
 for i in 3..5 {
-    print(i)
+    print(i + "\n")
 }
-// this prints 3, then 4 (in the terminal it would look like "34" though)
+// this prints 3 and 4
 
 
 // inside a for loop is a special 'loop' variable which contains useful properties:
@@ -316,6 +316,15 @@ for place, degrees in weather {
 for article in articles where article.views > 100 {
     // do something with popular articles
 }
+
+
+
+//---------------//
+// Named loop blocks
+//---------------//
+// Loops can be named and references in break and continue statements
+
+
 
 //---------------//
 // Match
@@ -352,20 +361,6 @@ when age {
     }
 }
 
-// Destructuring in match statements
-var person = ("john", 30)
-when person {
-    ("john", age) {
-        print("John is " + age + " years old")
-    }
-    ("jane", _) {
-        print("It's Jane!")
-    }
-    else {
-        print("unknown person")
-    }
-}
-
 // Type-based matching
 var data: Any = 42
 when data {
@@ -375,14 +370,14 @@ when data {
     is string {
         print("It's a string!")
     }
-    is else {
+    else {
         print("Unknown type")
     }
 }
 
 // Combining conditions in match statements
 when name {
-    "john", "jane" {
+    "john" or "jane" {
         print("Hello, friend!")
     }
     .length > 5 {
@@ -392,6 +387,40 @@ when name {
         print("Unknown or short name")
     }
 }
+
+
+
+//---------------//
+// Filtering
+//---------------//
+// Maps and Arrays both have a filter method that can be used to return a subset of the collection:
+// filter receives a func(a):bool which is called for each element. The element whose calls return true are kept.
+// Finally, it returns a new collection - but the elements are references - not copies.
+// For example:
+people = [
+    {
+        "name": "John"
+        "age": 20
+    },
+    {
+        "name": "jane",
+        "age": 25
+    }
+]
+
+peopleOver20 = people.filter(func(person:Person) {
+    return person{"age"} > 20
+})
+
+// However, since filtering collections is something one does very often, Zen has a filter mechanism as a language feature.
+peopleOver20 = people where person{"age"} > 20
+
+// As you can see, this is both shorter and easier to read. It's almost english.
+// the syntax is [variable] where [conditions]
+
+// the variable for the element can be any valid non-existing identifier
+// however, 'key', 'value' and 'index' can be used to refer specifically to either an element's index in an array, or keys and values of an element in a map.
+peopleOver20 = people where index > 0 // this will return [{"name": "jane", "age": 25}]
 
 
 //---------------//
@@ -683,8 +712,8 @@ trait Serialization {
     serialize(): string {
         var fields = Map<String, any> = {}
         var string = ""
-        for i, field in this.serializableFields {
-            string += field + ":" + string(this[field])
+        for key, value in this.serializableFields {
+            string += key + ":" + string(value)
         }
         return fields
     }
@@ -709,30 +738,74 @@ print(p.serialize())
 //-----------------------------------//
 // Zen organizes code into namespaces based on folder structure.
 // - Folders are namespaces.
-// - Each file in a given namespace are "modules"
+// - Each ".zen" file in a given namespace is a "module"
 // - Modules can define one or more symbols (functions, classes etc.) 
+// - Zen projects define their root namespace through a `package.zen` file.
+// - When importing
 
-// Zen projects define their root namespace through a `package.zen` file.
+//-----------------------------------
+// Consider this directory structure:
 
-// Importing Entire Namespaces
-// By default, importing a namespace (e.g., a package root) brings all symbols within that namespace into scope.
+// GameEngine/
+// - package.zen
+// - Core/
+// -- Vector2.zen
+// -- Utils.zen
+// -- Nested
+// --- Special.zen
 
-// Example:
-import sys       // Imports the `sys` namespace, making all symbols accessible via `<symbol>`
-sleep(1000) // Calls `sleep` function from `sys` namespace
+// where package.zen contains
+package GameEngine
 
-// Specific Symbol Import
-// Importing a specific symbol within a namespace brings it directly into scope without the prefix. This is useful for frequently used functions or classes.
+// where Utils.zen contains:
+func hello() {}
+func world() {}
+ 
+// and Vector2.zen contains
+class Vector2 {
+    x: int
+    y: int
+}
 
-// Example:
-import sys.sleep       // Imports only `sleep` function from `sys`
-sleep(1000)            // Calls `sleep`
+// and Special.zen contains
+func specialFunc() {}
 
-// Import alias
-// To avoid conflicts, one can import either whole namespaces or specific symbols into any scope
-//assuming gameEngine.core has a Vector2 class:
-import gameEngine as GE
-var vector = GE.core.Vector2(0, 0)
+// And in another project that wants to use the "gameEngine" package
+// we can:
+
+// 1. Import Namespace: imports all symbols from all modules directly under the "Core" namespce of the GameEngine package like this:
+import GameEngine/Core
+var vec2 = Vector2()
+hello()
+world()
+
+// 2. Import Namespace scoped: we may want to import them but keep them scoped to a namespace:
+import GameEngine/Core as gec
+var vec2 = gec.Vector2()
+gec.hello()
+gec.world()
+
+// 3. importing a module
+import GameEngine/Core/Utils
+hello()
+world()
+
+// 4. importing a module with alias
+import GameEngine/Core/Utils as GEUtils
+GEUtils.hello()
+GEUtils.world()
+
+// 3. Import a module: You can also import specific symbols
+import GameEngine/Core/Vector2 as CoreVector2
+class Vector2 extends CoreVector2 {}
+
+// 4. Importing multiple specific symbols
+// using the 'from' syntax to import specific symbols from namespaces.
+from GameEngine/Core import Vector2, hello
+var vec2 = Vector2()
+hello()
+world() // error, we didn't import this
+
 
 
 //-----------------------------------//
@@ -751,3 +824,21 @@ const settings = include("settings.json")  // Loads JSON as a structured map
 // one can do this:
 include("helloFromMyFile.zen")
 print(helloFromMyFile) // 5
+
+
+// Include can also be used to split class methods into multiple files
+// It's recommended to prefix those files by and underscore to prevent Zen's importer to scan them.
+// For example, if you have a file "MyClass.zen":
+package MyPackage
+class MyClass {
+    include("_MyClass_methods.zen")
+}
+
+// and a file "_MyClass_methods.zen":
+func init() {
+    // constructor
+}
+
+// and importing the MyClass
+from MyPackage import MyClass
+var obj = new MyClass()
