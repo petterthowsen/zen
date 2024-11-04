@@ -1,11 +1,28 @@
 //---------------------------//
-// Zen Language Reference
+// Zen Language Specification
 //---------------------------//
 // https://github.com/thowsenmedia/zen
 //
 // Zen is an general-purpose interpreted programming language implemented in Go.
 //
-// Zen is strictly typed with type inference.
+// Why another programming language? Aren't there enough already?
+// I've been looking for a garbage-collected, object-oriented, interpreted language that was strictly typed, with smart nullability
+// and a good set of libraries for concurrency and important features related to the web, AI, ioc and potentially even desktop apps. 
+//
+// There are some candidates, but in my evaluation of other langauges, I found that they did one of these things wrong:
+// (by wrong, I mean it's not how I would prefer it.)
+// - too much magic: this is stupid, it makes code difficult to maintain and hard to read.
+// - lack of OOP: object-orientation isn't a bad thing. Yes, it's an abstraction, but it's a damn useful one.
+// - Lack of strict typing: this increases likelihood of bugs
+// - Lack of concurrency support
+// - Require too much tooling (I'm looking at you JavaScript, Typescript and the 189 million frameworks and package management systems!)
+// - Niche domain (PHP, Perl, Ruby)
+// - Lack of garbage collection: Humans are stupid (particularly me) and most of the time, what matters is results, not speed. Computers are fast enough today that interpreted languages with GC is no problem for most tasks. 
+//
+// Many languages have almost all of these, but are missing 1 or 2. That's why I'm creating Zen.
+
+// Zen draws inspiration from many languages, including: Java, Scala, Gdscript, JavaScript, Python etc.
+
 // Zen supports many features, including:
 // - Classes
 // - Interfaces
@@ -13,7 +30,7 @@
 // - Functions
 // - Arrays
 // - Maps
-// - Tuples
+// - Tuples for multiple return values from functions
 // - Loops
 // - Ranges
 // - For/While loops
@@ -45,23 +62,28 @@ var title:string = "Welcome to Zen"
 
 // it is recommended to always specify the type for readability.
 // also: string literals are written with double-quotes only. This is to help support consistency.
+// (And to reserve single-quotes for a potential future language feature. Maybe regular expressions?)
 
-// to declare a untyped variable:
-var anything:any
+// Though strictly typed, you do have the option to use 'any' to denote an untyped variable:
+var anything:any = 5
+anything = "hello" // OK: anything is 'any' type.
 
-// it can of course also be nullable
-var anything:any?
-
-// here's a nullable string:
+// Zen has a concept of null, like most languages (aka nil) but variables are not nullable by default.
+// To make a nullable variable, use a question mark after the type:
 var subtitle:string?
 
-// subtitle is now declared but not assigned to any value.
-subtitle = "and now it has a value"
+var something:any? // this is like any old care-free scripting language now, an untyped nullable! This is not recommended, but supported.
+something = "and now it has a value" // it's now a string
+something = 5
 
-// since it's nullable, we can set it to null again
-subtitle = null
+// note that, even though untyped variables can exist, you can't do this:
+something += 10 // since it's any, Zen will complain about this
 
-// there are other datatypes besides strings of course:
+if something is int {
+    something += 10 // this is OK
+}
+
+// Here's a float type
 var price = 0.5 // creates a float (an unsigned 32 bit decimal number)
 
 var coins = 10 // creates an integer (an unsigned 32 bit integer number)
@@ -84,7 +106,7 @@ coins-- // equivalent to coins = coins - 1
 //---------------//
 // Conditional Statements
 //---------------//
-// to control logic flow using conditional statements, Zen has standard if, else if, else statements:
+// to control logic flow using conditional statements, Zen has standard if, elif, else statements:
 if coins > 10 {
     print("lots of coins!")
 }else if coins >= 5 {
@@ -110,7 +132,7 @@ if coins < 5 or not hungry {
 // Collections
 //---------------//
 // Collections are generic classes that implement some special interfaces which provide syntactic sugar for operating
-// on boxes of data.
+// on containers/lists/boxes of data.
 // The two most important ones being the Array and Map classes.
 
 // Under the hood, they are generics:
@@ -127,8 +149,10 @@ interface BracketSet<K, V> {
     protected func _bracketSet(key:K)
 }
 
-import "zen/collections:BracketGet"
-import "zen/collections:BracketSet"
+// main.zen:
+import zen/collections:BracketGet
+import zen/collections:BracketSet
+
 class Map<K, V, S> implements BracketGet<K, V>, BracketSet<K, V> {
 
     private keys:Array[K, S]
@@ -153,10 +177,13 @@ class Map<K, V, S> implements BracketGet<K, V>, BracketSet<K, V> {
 // to declare an array, use Array<TYPE, SIZE> where type can be "int", "string" etc. or "any" for mixed types.
 
 // Here's a fixed size array of ints, holding maximum 3 elements.
-var fixedArray: Array<Int, 3> = [1, 2, 3]
+var fixedArray: Array<int, 3> = [1, 2, 3]
+
+fixedArray.append(42) // error: exceeds array capacity
 
 // For dynamically sized arrays, either omit the size parameter:
-var dynamicArray: Array<Int>
+var dynamicArray: Array<int> = []
+dynamicArray.append(42)
 
 // or use INF for the size parameter (INF is a special keyword denoting infinite):
 var nullableArray: Array<String, INF>               // Nullable fixed-size array
@@ -170,6 +197,10 @@ names[0] // "John"
 // you can also change the value of any element
 names[1] = "Janette"
 
+// of course, any expression can be used to access an element
+var num = 5
+names[num - 4] // Janette
+
 // arrays are objects and have useful properties:
 
 names.first // "John"
@@ -182,13 +213,21 @@ names.length // 2
 names.reverse() // reverses/flips the order of the array
 names.slice(1, 2) // ["Janette", "Dave"]
 
+// If you need a large amount of elements but don't know exactly how many, you can have Zen allocate space for a given size:
+names.resize(1000)
+// This is more performant than re-sizing the array hundreds or thousands of times.
+// when new elements are created, their values will be the zero-value of the type, which are:
+// 0 for numbers
+// "" for strings (an empty string)
+// empty arrays for arrays
+// empty maps for maps
+// null for anything else (any, or MyClass etc.)
 
 
 //---------------//
 // Collections: Maps
 //---------------//
 // While arrays are useful to store ordered lists of items, maps can associate keys or "names" to many items.
-// Maps are similar to Dictionaries, JSON etc.
 // Maps have dynamic size.
 
 // to declare a map of string to any for example:
@@ -213,22 +252,12 @@ config.has("volume") // true
 config.get("volume") // 0.5
 config.contains(0.5) // true, it has a key whose value is 0.5
 
-config["dark_mode"] = false
+// collections use "Curly Access":
+config{"dark_mode"} = false
 
-
-
-//---------------//
-// Collections: Tuples
-//---------------//
-// Tuples are similar to an array but simpler: they are ordered, have fixed size and are immutable.
-// to create a tuple, simply use parenthesis
-var tuple = ("John", 40)
-
-// tuples are useful for functions that return multiple values, for example if a function returns the above tuple:
-var name, age = get_person_info(person)
-
-print(name) // "John"
-print(age) // 40
+// like bracket access, it supports any expression:
+var dark = "dark"
+config{dark + "_mode"} // false
 
 
 
@@ -240,6 +269,49 @@ print(age) // 40
 class CustomArray<T, S> extends Array<T, S> {
 
 }
+
+
+
+//---------------//
+// Tuples
+//---------------//
+// Tuples are a special construct in Zen. They are not collections, nor are they a generic type.
+// Tuples are a list of elements that are:
+// - ordered
+// - named
+// - typed per-element
+// - immutable
+// They exist solely to support functions that return more than one value.
+// You can loop through them by key or value, much like maps.
+
+// this can be useful in some contexts where you don't want to change the values.
+// but again, they're power is in functions:
+
+// Consider a httpRequest method that returns an HTTP status code and a response body.
+// We could return a map:
+func httpRequest(): Map<string, any> {
+    return {
+        "statusCode": 404,
+        "body": "Not Found"
+    }
+}
+
+// However, the caller of httpRequest can't be sure of the contents of the returned map - only that the keys are strings.
+// This is where tuples are useful:
+func httpRequest() : statusCode:int, body:string {
+    return 404, "not found"
+}
+
+// Now when we call httpRequest, we know that we're getting a statusCode which is an integer, and a body which is a string.
+
+var result = httpRequest()
+result.statusCode // 404
+result.body // "not found"
+
+// You can also use the destructuring syntax to unpack the tuple into local variables:
+var statusCode, body <= httpRequest()
+statusCode // 404
+body // "not found"
 
 
 
@@ -323,6 +395,7 @@ for article in articles where article.views > 100 {
 // Named loop blocks
 //---------------//
 // Loops can be named and references in break and continue statements
+// TODO: implement this.
 
 
 
@@ -726,7 +799,9 @@ class Person {
 
     state: string = "active"
 
-    use Serialization(["name", "id", "age"])
+    use Serialization(["name", "id", "age"]) {
+        serializableFields as _serializable
+    }
 }
 
 var p = new Person("john", 354, 25)
@@ -737,74 +812,89 @@ print(p.serialize())
 // Namespaces, Packages, and Imports
 //-----------------------------------//
 // Zen organizes code into namespaces based on folder structure.
-// - Folders are namespaces.
-// - Each ".zen" file in a given namespace is a "module"
-// - Modules can define one or more symbols (functions, classes etc.) 
+// - Folders represent namespaces.
+// - Each `.zen` file in a given namespace is a "module".
+// - Modules can define one or more symbols (functions, classes, etc.).
 // - Zen projects define their root namespace through a `package.zen` file.
-// - When importing
+// - When importing, Zen automatically treats modules as namespaces if they
+//   contain more than one symbol, simplifying import syntax and scoping.
+//
+// Note: Zen ignores any files starting with an underscore.
+// This is to allow developers to create .zen files without in their package for other purposes.
 
 //-----------------------------------
-// Consider this directory structure:
+// Example Directory Structure:
 
 // GameEngine/
 // - package.zen
 // - Core/
 // -- Vector2.zen
 // -- Utils.zen
-// -- Nested
+// -- Nested/
 // --- Special.zen
 
-// where package.zen contains
+// where `package.zen` contains
 package GameEngine
 
-// where Utils.zen contains:
+// where `Utils.zen` contains:
 func hello() {}
 func world() {}
  
-// and Vector2.zen contains
+// where `Vector2.zen` contains:
 class Vector2 {
     x: int
     y: int
 }
 
-// and Special.zen contains
+// where `Special.zen` contains:
 func specialFunc() {}
 
-// And in another project that wants to use the "gameEngine" package
-// we can:
+//-----------------------------------
+// Import Syntax
 
-// 1. Import Namespace: imports all symbols from all modules directly under the "Core" namespce of the GameEngine package like this:
+// Zen supports multiple ways to import modules and symbols within namespaces, 
+// with automatic handling for single-symbol vs. multi-symbol modules:
+
+// 1. Import Namespace: Imports all symbols from all modules directly under
+//    the specified namespace if the module has multiple symbols.
+
 import GameEngine/Core
-var vec2 = Vector2()
-hello()
-world()
+hello()         // Available directly
+world()         // Available directly
+var vec2 = Vector2() // Only if Vector2 is defined as part of GameEngine/Core
 
-// 2. Import Namespace scoped: we may want to import them but keep them scoped to a namespace:
+// 2. Import Namespace with Scoped Alias: Imports all symbols but keeps them
+//    scoped under an alias.
+
 import GameEngine/Core as gec
-var vec2 = gec.Vector2()
-gec.hello()
-gec.world()
+gec.hello()     // Scoped access
+gec.world()     // Scoped access
 
-// 3. importing a module
-import GameEngine/Core/Utils
-hello()
-world()
+// 3. Importing a Single-symbol Module Directly: If a module defines only
+//    a single symbol, it is imported directly by default.
 
-// 4. importing a module with alias
-import GameEngine/Core/Utils as GEUtils
-GEUtils.hello()
-GEUtils.world()
+import GameEngine/Core/Vector2
+var vec2 = Vector2() // Direct access without specifying symbol name
 
-// 3. Import a module: You can also import specific symbols
+// 4. Importing a Single-symbol Module with Alias: You can alias a single-symbol
+//    module for clarity or disambiguation.
+
 import GameEngine/Core/Vector2 as CoreVector2
-class Vector2 extends CoreVector2 {}
+var vec2 = CoreVector2()
 
-// 4. Importing multiple specific symbols
-// using the 'from' syntax to import specific symbols from namespaces.
-from GameEngine/Core import Vector2, hello
-var vec2 = Vector2()
-hello()
-world() // error, we didn't import this
+// 5. Importing Specific Symbols from a Multi-symbol Module: If a module defines 
+//    multiple symbols, you can selectively import symbols using the `from` syntax.
+
+from GameEngine/Core/Utils import hello
+hello()        // Directly accessible
+world()        // Error: not imported
+
+// Notes:
+// - Modules with more than one symbol are treated as namespaces, 
+//   allowing flexible import and scoping.
+// - Single-symbol modules are directly accessible upon import, 
+//   reducing verbosity and improving readability.
+// - Aliasing with `as` works for both single-symbol and multi-symbol modules.
 
 
 
