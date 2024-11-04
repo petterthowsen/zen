@@ -61,6 +61,56 @@ zenlang/
 - Curly access for maps (myMap{"name"})
 - Function calls
 
+### Type System
+
+The type system in Zen is implemented using two main AST node types:
+
+#### BasicType
+- Represents primitive types (int, int64, float, float64, string, bool)
+- Used for simple, non-parametric types
+- Example usage:
+```go
+// Creating a basic type
+basicType := expression.NewBasicType("int", location)
+
+// In AST nodes that need type information
+varDecl := statement.NewVarDeclaration(
+    "x",
+    basicType,  // Type as ast.Expression
+    initializer,
+    isConstant,
+    isNullable,
+    location,
+)
+```
+
+#### ParametricType
+- Represents generic/parametric types like Array<T> or Map<K,V>
+- Supports nested type parameters
+- Can mix type and non-type parameters (e.g., Array<int, 3>)
+- Example usage:
+```go
+// Creating a parametric type
+params := []expression.Parameter{
+    {Value: expression.NewBasicType("int", loc), IsType: true},
+    {Value: int64(3), IsType: false},
+}
+arrayType := expression.NewParametricType("Array", params, location)
+```
+
+#### Type System Guidelines
+1. All AST nodes that reference types should use ast.Expression
+2. Never store types as raw strings
+3. Use Parser.parseType() for parsing all type annotations
+4. Support both basic and parametric types uniformly throughout the codebase
+
+Example contexts where proper type nodes should be used:
+- Variable declarations
+- Function parameters
+- Function return types
+- Type casts
+- Generic type constraints
+
 ### Declarations
 - Variable declarations with type annotations and nullability with question mark
 - Function declarations with parameters and return types
@@ -129,10 +179,8 @@ AssertParseError(t, "invalid { syntax")
 
 ## Implementing New Features
 
-### 1. Update the Grammar
-First, add your new feature to `grammar.ebnf`. This ensures the syntax is formally defined.
 
-### 2. Add Lexer Support
+### 1. Add Lexer Support
 If your feature requires new tokens:
 1. Add token types in `lang/lexing/Token.go`
 2. Update the lexer in `lang/lexing/Lexer.go`
@@ -152,7 +200,7 @@ var tokenTypeNames = map[TokenType]string{
 }
 ```
 
-### 3. Add Parser Support
+### 2. Add Parser Support
 
 1. Create AST Nodes:
    - For expressions: Add to `lang/parsing/expression/`
@@ -187,6 +235,13 @@ func (p *Parser) parseStatement() ast.Statement {
     if p.matchKeyword("newfeature") {
         return p.parseNewFeature()
     }
+
+    // Use parseType() to handle both basic and parametric types
+    typeExpr := p.parseType()
+    if typeExpr == nil {
+        return nil
+    }
+
     // ... existing statement parsing ...
 }
 
@@ -195,7 +250,7 @@ func (p *Parser) parseNewFeature() ast.Statement {
 }
 ```
 
-### 4. Testing Strategy
+### 3. Testing Strategy
 
 1. Create test files:
    - `tests/parsing/new_feature.zen`: Example code using the new feature

@@ -9,13 +9,13 @@ import (
 type FuncParameterExpression struct {
 	ast.Expression
 	Name         string
-	Type         string
+	Type         ast.Expression
 	IsNullable   bool
 	Location     *common.SourceLocation
 	DefaultValue ast.Expression
 }
 
-func NewFuncParameterExpression(name string, typ string, isNullable bool, location *common.SourceLocation, defaultValue ast.Expression) *FuncParameterExpression {
+func NewFuncParameterExpression(name string, typ ast.Expression, isNullable bool, location *common.SourceLocation, defaultValue ast.Expression) *FuncParameterExpression {
 	return &FuncParameterExpression{
 		Name:         name,
 		Type:         typ,
@@ -41,7 +41,7 @@ func (n *FuncParameterExpression) String(indent int) string {
 	sb.WriteString(indentStr + "  FuncParameterExpression:\n")
 
 	sb.WriteString(indentStr + "    Name: " + n.Name + "\n")
-	sb.WriteString(indentStr + "    Type: " + n.Type + "\n")
+	sb.WriteString(indentStr + "    Type: " + n.Type.String(indent+2) + "\n")
 	if n.DefaultValue != nil {
 		sb.WriteString(indentStr + "    DefaultValue:")
 		sb.WriteString(n.DefaultValue.String(indent+2) + "\n")

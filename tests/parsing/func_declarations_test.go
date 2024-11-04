@@ -2,6 +2,7 @@ package parsing
 
 import (
 	"testing"
+	"zen/lang/parsing/expression"
 	"zen/lang/parsing/statement"
 )
 
@@ -55,8 +56,11 @@ func TestFuncDeclarations(t *testing.T) {
 	}
 
 	// and is of type 'string'
-	if sayParamSomething.Type != "string" {
-		t.Errorf("Expected parameter type 'string', got %s", sayParamSomething.Type)
+	paramType, ok := sayParamSomething.Type.(*expression.BasicType)
+	if !ok {
+		t.Errorf("Expected BasicType for parameter type, got %T", sayParamSomething.Type)
+	} else if paramType.Name != "string" {
+		t.Errorf("Expected parameter type 'string', got %s", paramType.Name)
 	}
 
 	add := AssertFuncDeclaration(t, programNode.Statements[2])
@@ -78,8 +82,11 @@ func TestFuncDeclarations(t *testing.T) {
 		t.Errorf("Expected parameter 'a', got %s", addA.Name)
 	}
 
-	if addA.Type != "int" {
-		t.Errorf("Expected parameter type 'int', got %s", addA.Type)
+	paramTypeA, ok := addA.Type.(*expression.BasicType)
+	if !ok {
+		t.Errorf("Expected BasicType for parameter type, got %T", addA.Type)
+	} else if paramTypeA.Name != "int" {
+		t.Errorf("Expected parameter type 'int', got %s", paramTypeA.Name)
 	}
 
 	if addA.IsNullable != false {
@@ -95,13 +102,19 @@ func TestFuncDeclarations(t *testing.T) {
 		t.Errorf("Expected parameter b to be NOT nullable, got %v", addB.IsNullable)
 	}
 
-	if addB.Type != "int" {
-		t.Errorf("Expected parameter type 'int', got %s", addB.Type)
+	paramTypeB, ok := addB.Type.(*expression.BasicType)
+	if !ok {
+		t.Errorf("Expected BasicType for parameter type, got %T", addB.Type)
+	} else if paramTypeB.Name != "int" {
+		t.Errorf("Expected parameter type 'int', got %s", paramTypeB.Name)
 	}
 
 	// verify return type
-	if add.ReturnType != "int" {
-		t.Errorf("Expected return type 'int', got %s", add.ReturnType)
+	returnType, ok := add.ReturnType.(*expression.BasicType)
+	if !ok {
+		t.Errorf("Expected BasicType for return type, got %T", add.ReturnType)
+	} else if returnType.Name != "int" {
+		t.Errorf("Expected return type 'int', got %s", returnType.Name)
 	}
 
 	// optional parameter
@@ -125,8 +138,11 @@ func TestFuncDeclarations(t *testing.T) {
 	}
 
 	// logMessage is of type string
-	if logMessage.Type != "string" {
-		t.Errorf("Expected parameter type 'string', got %s", logMessage.Type)
+	messageType, ok := logMessage.Type.(*expression.BasicType)
+	if !ok {
+		t.Errorf("Expected BasicType for parameter type, got %T", logMessage.Type)
+	} else if messageType.Name != "string" {
+		t.Errorf("Expected parameter type 'string', got %s", messageType.Name)
 	}
 
 	// not nullable
@@ -139,8 +155,11 @@ func TestFuncDeclarations(t *testing.T) {
 		t.Errorf("Expected parameter 'suffix', got %s", logSuffix.Name)
 	}
 
-	if logSuffix.Type != "string" {
-		t.Errorf("Expected parameter type 'string', got %s", logSuffix.Type)
+	suffixType, ok := logSuffix.Type.(*expression.BasicType)
+	if !ok {
+		t.Errorf("Expected BasicType for parameter type, got %T", logSuffix.Type)
+	} else if suffixType.Name != "string" {
+		t.Errorf("Expected parameter type 'string', got %s", suffixType.Name)
 	}
 
 	// verify suffix is nullable
@@ -149,7 +168,10 @@ func TestFuncDeclarations(t *testing.T) {
 	}
 
 	// verify return type
-	if log.ReturnType != "void" {
-		t.Errorf("Expected return type 'void', got %s", log.ReturnType)
+	logReturnType, ok := log.ReturnType.(*expression.BasicType)
+	if !ok {
+		t.Errorf("Expected BasicType for return type, got %T", log.ReturnType)
+	} else if logReturnType.Name != "void" {
+		t.Errorf("Expected return type 'void', got %s", logReturnType.Name)
 	}
 }

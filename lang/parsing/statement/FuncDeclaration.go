@@ -10,12 +10,12 @@ import (
 type FuncDeclaration struct {
 	Name       string
 	Parameters []expression.FuncParameterExpression
-	ReturnType string
+	ReturnType ast.Expression
 	Body       []ast.Statement
 	location   *common.SourceLocation
 }
 
-func NewFuncDeclarationStatement(name string, parameters []expression.FuncParameterExpression, returnType string, body []ast.Statement, location *common.SourceLocation) *FuncDeclaration {
+func NewFuncDeclarationStatement(name string, parameters []expression.FuncParameterExpression, returnType ast.Expression, body []ast.Statement, location *common.SourceLocation) *FuncDeclaration {
 	return &FuncDeclaration{
 		Name:       name,
 		Parameters: parameters,
@@ -36,7 +36,7 @@ func (n *FuncDeclaration) GetLocation() *common.SourceLocation {
 // IsStatement implements ast.Statement interface
 func (n *FuncDeclaration) IsStatement() {}
 
-func NewFuncDeclaration(name string, parameters []expression.FuncParameterExpression, returnType string, body []ast.Statement, location *common.SourceLocation) *FuncDeclaration {
+func NewFuncDeclaration(name string, parameters []expression.FuncParameterExpression, returnType ast.Expression, body []ast.Statement, location *common.SourceLocation) *FuncDeclaration {
 	return &FuncDeclaration{
 		Name:       name,
 		Parameters: parameters,
@@ -60,7 +60,7 @@ func (n *FuncDeclaration) String(indent int) string {
 	}
 
 	// Write return type
-	sb.WriteString(indentStr + "  ReturnType: " + n.ReturnType + "\n")
+	sb.WriteString(indentStr + "  ReturnType: " + n.ReturnType.String(indent+1) + "\n")
 
 	// Write body
 	sb.WriteString(indentStr + "  Body:\n")

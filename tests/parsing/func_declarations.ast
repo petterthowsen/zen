@@ -1,7 +1,7 @@
 Program
   FuncDeclaration sayHello
     Parameters:
-    ReturnType: void
+    ReturnType:     void
     Body:
       ExpressionStatement
         Call
@@ -14,8 +14,8 @@ Program
     Parameters:
       FuncParameterExpression:
         Name: something
-        Type: string
-    ReturnType: void
+        Type:         string
+    ReturnType:     void
     Body:
       ExpressionStatement
         Call
@@ -28,11 +28,11 @@ Program
     Parameters:
       FuncParameterExpression:
         Name: a
-        Type: int
+        Type:         int
       FuncParameterExpression:
         Name: b
-        Type: int
-    ReturnType: int
+        Type:         int
+    ReturnType:     int
     Body:
       Return
         Binary: +
@@ -43,11 +43,11 @@ Program
     Parameters:
       FuncParameterExpression:
         Name: message
-        Type: string
+        Type:         string
       FuncParameterExpression:
         Name: suffix
-        Type: string
-    ReturnType: void
+        Type:         string
+    ReturnType:     void
     Body:
       If
         Primary Condition:

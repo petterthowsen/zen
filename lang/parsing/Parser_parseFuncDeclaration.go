@@ -56,17 +56,15 @@ func (p *Parser) parseFuncDeclaration() ast.Statement {
 	}
 
 	// Parse optional return type (defaults to "void" if not specified)
-	returnType := "void"
+	var returnType ast.Expression
 	if p.match(lexing.COLON) {
-		tok := p.peek()
-
-		if tok.Type == lexing.KEYWORD || tok.Type == lexing.IDENTIFIER {
-			returnType = tok.Literal
-		} else {
-			p.error("Invalid function return type " + tok.Literal)
+		returnType = p.parseType()
+		if returnType == nil {
+			return nil
 		}
-
-		p.advance()
+	} else {
+		// Default return type is void
+		returnType = expression.NewBasicType("void", startToken.Location)
 	}
 
 	// Parse function body
@@ -110,8 +108,9 @@ func (p *Parser) parseFuncParameter() *expression.FuncParameterExpression {
 		return nil
 	}
 
-	typeToken := p.consume(lexing.IDENTIFIER, "Expected parameter type")
-	if len(p.errors) > 0 {
+	// Parse the parameter type using parseType
+	paramType := p.parseType()
+	if paramType == nil {
 		return nil
 	}
 
@@ -130,7 +129,7 @@ func (p *Parser) parseFuncParameter() *expression.FuncParameterExpression {
 
 	return expression.NewFuncParameterExpression(
 		name.Literal,
-		typeToken.Literal,
+		paramType,
 		isNullable,
 		name.Location,
 		defaultValue,
