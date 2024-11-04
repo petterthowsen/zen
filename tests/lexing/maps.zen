@@ -1,0 +1,8 @@
+// single-line
+var config = {"title": "hello", "volume": 0.5}
+
+// multi-line
+var config = {
+    "title": "hello"
+    "volume": 0.5
+}

@@ -1,0 +1,9 @@
+// single line
+var numbers = [1, 2, 3]
+
+// multiline
+var strings = [
+    "one"
+    "two"
+    "three"
+]
