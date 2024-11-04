@@ -2,48 +2,11 @@ package parsing
 
 import (
 	"testing"
-	"zen/lang/common"
-	"zen/lang/lexing"
-	"zen/lang/parsing"
 )
 
 func TestIfStatements(t *testing.T) {
-	// First test lexing
-	content := `if true {
-    print("first")
-}
-
-var name = "john"
-var age = 25
-
-if name == "john" or age > 20 {
-    print("second")
-}
-
-if (name == "john" and age > 20) or (name == "jane" and age > 40) {
-    print("third")
-}`
-
-	sourceCode := common.NewInlineSourceCode(content)
-	lexer := lexing.NewLexer(sourceCode)
-	tokens, err := lexer.Scan()
-	if err != nil {
-		t.Fatalf("Lexer error: %v", err)
-	}
-
-	// Now test parsing
-	parser := parsing.NewParser(tokens, false)
-	program, errors := parser.Parse()
-	if len(errors) > 0 {
-		t.Error("Parser errors:")
-		for _, err := range errors {
-			t.Errorf("  %v", err)
-		}
-		return
-	}
-
+	program := ParseTestFile(t, "if_statements.zen")
 	if program == nil {
-		t.Fatal("Failed to parse program")
 		return
 	}
 
@@ -58,7 +21,7 @@ if (name == "john" and age > 20) or (name == "jane" and age > 40) {
 	}
 	AssertLiteralExpression(t, ifStmt.PrimaryCondition, true)
 
-	// Test if with comparison
+	// Test if with comparison and 'or'
 	stmt = program.Statements[3]
 	ifStmt = AssertIfStatement(t, stmt)
 	if ifStmt == nil {
@@ -127,4 +90,61 @@ if (name == "john" and age > 20) or (name == "jane" and age > 40) {
 	ageGt = AssertBinaryExpression(t, right.Right, ">")
 	AssertIdentifierExpression(t, ageGt.Left, "age")
 	AssertLiteralExpression(t, ageGt.Right, int64(40))
+
+	// Test if with else
+	stmt = program.Statements[5]
+	ifStmt = AssertIfStatement(t, stmt)
+	if ifStmt == nil {
+		t.Fatal("Failed to parse if-else statement")
+		return
+	}
+	if ifStmt.ElseBlock == nil {
+		t.Fatal("Expected else block but got nil")
+		return
+	}
+	binary = AssertBinaryExpression(t, ifStmt.PrimaryCondition, "==")
+	AssertIdentifierExpression(t, binary.Left, "name")
+	AssertLiteralExpression(t, binary.Right, "john")
+
+	// Test if with else if
+	stmt = program.Statements[6]
+	ifStmt = AssertIfStatement(t, stmt)
+	if ifStmt == nil {
+		t.Fatal("Failed to parse if-else-if statement")
+		return
+	}
+	if len(ifStmt.ElseIfBlocks) != 1 {
+		t.Fatalf("Expected 1 else-if block but got %d", len(ifStmt.ElseIfBlocks))
+		return
+	}
+	binary = AssertBinaryExpression(t, ifStmt.PrimaryCondition, "==")
+	AssertIdentifierExpression(t, binary.Left, "name")
+	AssertLiteralExpression(t, binary.Right, "john")
+
+	elseIfCond := AssertBinaryExpression(t, ifStmt.ElseIfBlocks[0].Condition, "==")
+	AssertIdentifierExpression(t, elseIfCond.Left, "name")
+	AssertLiteralExpression(t, elseIfCond.Right, "jane")
+
+	// Test multiple if-else-if with else
+	stmt = program.Statements[7]
+	ifStmt = AssertIfStatement(t, stmt)
+	if ifStmt == nil {
+		t.Fatal("Failed to parse multiple if-else-if statement")
+		return
+	}
+	if len(ifStmt.ElseIfBlocks) != 1 {
+		t.Fatalf("Expected 1 else-if block but got %d", len(ifStmt.ElseIfBlocks))
+		return
+	}
+	if ifStmt.ElseBlock == nil {
+		t.Fatal("Expected else block but got nil")
+		return
+	}
+	binary = AssertBinaryExpression(t, ifStmt.PrimaryCondition, "==")
+	AssertIdentifierExpression(t, binary.Left, "name")
+	AssertLiteralExpression(t, binary.Right, "john")
+
+	elseIfCond = AssertBinaryExpression(t, ifStmt.ElseIfBlocks[0].Condition, "==")
+	AssertIdentifierExpression(t, elseIfCond.Left, "name")
+	AssertLiteralExpression(t, elseIfCond.Right, "jane")
 }

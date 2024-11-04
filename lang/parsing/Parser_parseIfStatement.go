@@ -97,12 +97,6 @@ func (p *Parser) parseIfConditionBlock() *statement.IfConditionBlock {
 
 	body := p.parseBlock()
 
-	// Consume the right brace
-	if !p.match(lexing.RIGHT_BRACE) {
-		p.error("Expected '}' after if condition")
-		return nil
-	}
-
 	return &statement.IfConditionBlock{
 		Location:  condition.GetLocation(),
 		Condition: condition,

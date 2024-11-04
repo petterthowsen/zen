@@ -1,7 +1,6 @@
 package parsing
 
 import (
-	"fmt"
 	"strconv"
 	"zen/lang/common"
 	"zen/lang/lexing"
@@ -12,8 +11,6 @@ import (
 
 // parseType parses a type annotation, which can be either a basic type or a parametric type
 func (p *Parser) parseType() ast.Expression {
-	fmt.Printf("parseType: current token = %v\n", p.peek())
-
 	// Parse the base type name, which can be either a keyword (primitive) or identifier (user type)
 	var typeToken lexing.Token
 	if p.check(lexing.KEYWORD) {
@@ -26,8 +23,6 @@ func (p *Parser) parseType() ast.Expression {
 		p.errorAtToken(p.peek(), "Expected KEYWORD or IDENTIFIER for type name")
 		return nil
 	}
-
-	fmt.Printf("parseType: type name = %v\n", typeToken.Literal)
 
 	// If there's no angle bracket, it's a basic type
 	if !p.match(lexing.LESS) {
@@ -52,7 +47,6 @@ func (p *Parser) parseType() ast.Expression {
 
 	// Parse additional parameters
 	for p.match(lexing.COMMA) {
-		fmt.Printf("parseType: after comma, current token = %v\n", p.peek())
 		// Don't allow trailing comma
 		if p.check(lexing.GREATER) {
 			p.error("Unexpected trailing comma")
@@ -65,8 +59,6 @@ func (p *Parser) parseType() ast.Expression {
 		}
 		params = append(params, *param)
 	}
-
-	fmt.Printf("parseType: at closing bracket, current token = %v\n", p.peek())
 
 	// Expect closing angle bracket
 	if !p.match(lexing.GREATER) {
@@ -82,8 +74,6 @@ func (p *Parser) parseType() ast.Expression {
 // - A nested parametric type
 // - An integer literal
 func (p *Parser) parseTypeParameter() *expression.Parameter {
-	fmt.Printf("parseTypeParameter: current token = %v\n", p.peek())
-
 	var location *common.SourceLocation
 
 	// Try to parse an integer parameter first
@@ -95,7 +85,6 @@ func (p *Parser) parseTypeParameter() *expression.Parameter {
 			p.errorAtToken(token, "Invalid integer literal")
 			return nil
 		}
-		fmt.Printf("parseTypeParameter: found integer %v\n", value)
 		return &expression.Parameter{
 			Value:    value,
 			IsType:   false,
@@ -110,7 +99,6 @@ func (p *Parser) parseTypeParameter() *expression.Parameter {
 
 		// If it's followed by a less-than, it's a nested parametric type
 		if p.check(lexing.LESS) {
-			fmt.Printf("parseTypeParameter: found nested type at %v\n", token.Literal)
 			// Parse the nested type
 			if !p.match(lexing.LESS) {
 				p.error("Expected '<' after type name")
@@ -154,7 +142,6 @@ func (p *Parser) parseTypeParameter() *expression.Parameter {
 		}
 
 		// Otherwise it's a basic type
-		fmt.Printf("parseTypeParameter: found basic type %v\n", token.Literal)
 		return &expression.Parameter{
 			Value:    token.Literal,
 			IsType:   true,

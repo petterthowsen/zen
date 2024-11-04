@@ -1,0 +1,141 @@
+Program
+  If
+    Primary Condition:
+      Literal: true
+    Primary Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Literal: first
+    Else If Blocks:
+    Else Block:
+  Var Declaration
+    Name: name
+    Initializer:
+      Literal: john
+  Var Declaration
+    Name: age
+    Initializer:
+      Literal: 25
+  If
+    Primary Condition:
+      Binary: or
+        Binary: ==
+          Identifier: name
+          Literal: john
+        Binary: >
+          Identifier: age
+          Literal: 20
+    Primary Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Literal: second
+    Else If Blocks:
+    Else Block:
+  If
+    Primary Condition:
+      Binary: or
+        Binary: and
+          Binary: ==
+            Identifier: name
+            Literal: john
+          Binary: >
+            Identifier: age
+            Literal: 20
+        Binary: and
+          Binary: ==
+            Identifier: name
+            Literal: jane
+          Binary: >
+            Identifier: age
+            Literal: 40
+    Primary Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Literal: third
+    Else If Blocks:
+    Else Block:
+  If
+    Primary Condition:
+      Binary: ==
+        Identifier: name
+        Literal: john
+    Primary Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Literal: if with else:if
+    Else If Blocks:
+    Else Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Literal: if with else:else
+  If
+    Primary Condition:
+      Binary: ==
+        Identifier: name
+        Literal: john
+    Primary Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Literal: name is john
+    Else If Blocks:
+      Condition:
+          Binary: ==
+            Identifier: name
+            Literal: jane
+      Body:
+          ExpressionStatement
+            Call
+              Callee:
+                Identifier: print
+              Arguments:
+                Literal: name is jane
+    Else Block:
+  If
+    Primary Condition:
+      Binary: ==
+        Identifier: name
+        Literal: john
+    Primary Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Literal: name is john
+    Else If Blocks:
+      Condition:
+          Binary: ==
+            Identifier: name
+            Literal: jane
+      Body:
+          ExpressionStatement
+            Call
+              Callee:
+                Identifier: print
+              Arguments:
+                Literal: name is jane
+    Else Block:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Literal: name is neither john nor jane

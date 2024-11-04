@@ -1,3 +1,4 @@
+// simplest case
 if true {
     print("first")
 }
@@ -5,10 +6,35 @@ if true {
 var name = "john"
 var age = 25
 
+// or
 if name == "john" or age > 20 {
     print("second")
 }
 
+// complex condition
 if (name == "john" and age > 20) or (name == "jane" and age > 40) {
     print("third")
+}
+
+// if with else
+if name == "john" {
+    print("if with else:if")
+}else {
+    print("if with else:else")
+}
+
+// if with else if
+if name == "john" {
+    print("name is john")
+} elif name == "jane" {
+    print("name is jane")
+}
+
+// multiple if else if
+if name == "john" {
+    print("name is john")
+} elif name == "jane" {
+    print("name is jane")
+} else {
+    print("name is neither john nor jane")
 }
