@@ -8,7 +8,7 @@ import (
 
 // BasicType represents a simple type name, which can be either:
 // - A primitive type (string, int, float64, etc.) from keywords
-// - A user-defined type (Array, MyClass, etc.) from identifiers
+// - A class type (Array, Map, MyClass, etc.) from identifiers
 type BasicType struct {
 	Name     string
 	Location *common.SourceLocation
