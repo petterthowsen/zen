@@ -116,9 +116,16 @@ var keywords = []string{
 	"while",
 	"when",
 	"where",
+
+	"throw",
+	"try",
+	"catch",
+	"finally",
+
+	"defer",
+
 	"break",
 	"continue",
-
 	"return",
 
 	"func",

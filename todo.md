@@ -43,8 +43,14 @@
   - [x] Not (not)
 - [x] Member access (obj.prop)
 - [x] Function calls
-- [ ] Array literals and access
-- [ ] Map literals and access
+- [ ] Array literals
+  - [ ] Bracket access (array[0])
+- [ ] Map literals
+  - [ ] Curly access (map{"key"})
+- [ ] Tuple Literals (("status": 404, "body": "not found"))
+  - [ ] Tuple destructuring (var status, body <= resultTuple)
+  - [ ] Tuple accessors just use regular object access
+  - [ ] Tuple inference in functions (func() : status: int, body: string) inferred as Tuple<int, string> with names "status" and "body"
 - [ ] Lambda expressions
 
 ## Error Handling
@@ -65,6 +71,7 @@
   - [x] Mixed type and value parameters (Array<string, 10>)
 - [ ] Union types
 - [ ] Nullable type handling
+
 ## Type checking (Should be done after parsing stage)
 - [ ] Type compatibility rules
 - [ ] Basic type checking
