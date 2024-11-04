@@ -13,9 +13,18 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseVarDeclaration()
 	}
 
+	// async func declaration
+	if p.matchKeyword("async") {
+		if !p.matchKeyword("func") {
+			p.errorAtToken(p.peek(), "Expected 'func' after 'async'")
+			return nil
+		}
+		return p.parseFuncDeclaration(true)
+	}
+
 	// func declaration
 	if p.matchKeyword("func") {
-		return p.parseFuncDeclaration()
+		return p.parseFuncDeclaration(false)
 	}
 
 	// If Statement

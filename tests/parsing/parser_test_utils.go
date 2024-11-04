@@ -196,6 +196,16 @@ func AssertUnaryExpression(t *testing.T, expr ast.Expression, expectedOp string)
 	return un
 }
 
+// AssertAwaitExpression checks if an expression is an await expression
+func AssertAwaitExpression(t *testing.T, expr ast.Expression) *expression.AwaitExpression {
+	await, ok := expr.(*expression.AwaitExpression)
+	if !ok {
+		t.Errorf("Expected AwaitExpression, got %T", expr)
+		return nil
+	}
+	return await
+}
+
 // AssertIdentifierExpression checks if an expression is an identifier with expected name
 func AssertIdentifierExpression(t *testing.T, expr ast.Expression, expectedName string) *expression.IdentifierExpression {
 	id, ok := expr.(*expression.IdentifierExpression)

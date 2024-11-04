@@ -107,6 +107,21 @@ var keywords = []string{
 	"var",
 	"const",
 
+	// TYPE keywords
+	"int",
+	"int64",
+	"float",
+	"float64",
+	"string",
+	"bool",
+	"any",
+
+	// VALUE literals
+	"true",
+	"false",
+	"null",
+	"void",
+
 	"if",
 	"elif",
 	"else",
@@ -123,6 +138,8 @@ var keywords = []string{
 	"finally",
 
 	"defer",
+	"async",
+	"await",
 
 	"break",
 	"continue",
@@ -137,10 +154,6 @@ var keywords = []string{
 	"this",
 	"super",
 	"pub",
-
-	"true",
-	"false",
-	"null",
 
 	"and",
 	"or",

@@ -8,7 +8,7 @@ import (
 )
 
 // parseFuncDeclaration: Parses a function declaration
-func (p *Parser) parseFuncDeclaration() ast.Statement {
+func (p *Parser) parseFuncDeclaration(async bool) ast.Statement {
 	startToken := p.previous() // Save the 'func' token for error reporting
 
 	// Parse function name
@@ -91,6 +91,7 @@ func (p *Parser) parseFuncDeclaration() ast.Statement {
 		parameters,
 		returnType,
 		body,
+		async,
 		startToken.Location,
 	)
 }

@@ -23,6 +23,11 @@ func TestFuncDeclarations(t *testing.T) {
 		return
 	}
 
+	// not async
+	if sayHello.Async {
+		t.Errorf("Expected func sayHello to be NOT async, got %v", sayHello.Async)
+	}
+
 	// verify that sayHello.Body[0] is instance of CallExpression
 	_, ok := sayHello.Body[0].(*statement.ExpressionStatement)
 	if !ok {
@@ -173,5 +178,11 @@ func TestFuncDeclarations(t *testing.T) {
 		t.Errorf("Expected BasicType for return type, got %T", log.ReturnType)
 	} else if logReturnType.Name != "void" {
 		t.Errorf("Expected return type 'void', got %s", logReturnType.Name)
+	}
+
+	// test async function is async
+	async := AssertFuncDeclaration(t, programNode.Statements[3])
+	if async.Async == true {
+		t.Errorf("Expected async function, got %v", async.Async)
 	}
 }

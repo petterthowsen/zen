@@ -52,6 +52,7 @@ type Visitor interface {
 	VisitMemberAccess(node Expression) interface{}
 	VisitParametricType(node Expression) interface{}
 	VisitBasicType(node Expression) interface{}
+	VisitAwait(node Expression) interface{}
 }
 
 // ProgramNode represents the root node of the AST

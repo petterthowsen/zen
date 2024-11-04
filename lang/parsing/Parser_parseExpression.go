@@ -168,14 +168,17 @@ func (p *Parser) parseMultiplicative() ast.Expression {
 
 // parseUnary: Parses unary operators
 func (p *Parser) parseUnary() ast.Expression {
-	if p.match(lexing.MINUS) || p.matchKeyword("not") {
-		operator := p.previous().Literal
+	if p.match(lexing.MINUS) || p.matchKeyword("not") || p.matchKeyword("await") {
+		operator := p.previous()
 		expr := p.parseUnary()
 		if expr == nil {
 			p.errorAtToken(p.peek(), "Expected expression after unary operator")
 			return nil
 		}
-		return expression.NewUnaryExpression(operator, expr, p.previous().Location)
+		if operator.Literal == "await" {
+			return expression.NewAwaitExpression(expr, operator.Location)
+		}
+		return expression.NewUnaryExpression(operator.Literal, expr, operator.Location)
 	}
 
 	return p.parsePostfix()

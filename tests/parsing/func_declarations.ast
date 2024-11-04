@@ -70,3 +70,17 @@ Program
               Arguments:
                 Identifier: message
 
+  FuncDeclaration fetch
+    Parameters:
+      FuncParameterExpression:
+        Name: url
+        Type:         string
+    ReturnType:     void
+    Body:
+      ExpressionStatement
+        Call
+          Callee:
+            Identifier: print
+          Arguments:
+            Literal: hello
+

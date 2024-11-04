@@ -12,15 +12,21 @@ type FuncDeclaration struct {
 	Parameters []expression.FuncParameterExpression
 	ReturnType ast.Expression
 	Body       []ast.Statement
+	Async      bool
 	location   *common.SourceLocation
 }
 
-func NewFuncDeclarationStatement(name string, parameters []expression.FuncParameterExpression, returnType ast.Expression, body []ast.Statement, location *common.SourceLocation) *FuncDeclaration {
+// IsStatement implements ast.Statement interface
+func (n *FuncDeclaration) IsStatement() {}
+
+// NewFuncDeclaration creates a new FuncDeclaration
+func NewFuncDeclaration(name string, parameters []expression.FuncParameterExpression, returnType ast.Expression, body []ast.Statement, async bool, location *common.SourceLocation) *FuncDeclaration {
 	return &FuncDeclaration{
 		Name:       name,
 		Parameters: parameters,
 		ReturnType: returnType,
 		Body:       body,
+		Async:      async,
 		location:   location,
 	}
 }
@@ -31,19 +37,6 @@ func (n *FuncDeclaration) Accept(visitor ast.Visitor) interface{} {
 
 func (n *FuncDeclaration) GetLocation() *common.SourceLocation {
 	return n.location
-}
-
-// IsStatement implements ast.Statement interface
-func (n *FuncDeclaration) IsStatement() {}
-
-func NewFuncDeclaration(name string, parameters []expression.FuncParameterExpression, returnType ast.Expression, body []ast.Statement, location *common.SourceLocation) *FuncDeclaration {
-	return &FuncDeclaration{
-		Name:       name,
-		Parameters: parameters,
-		ReturnType: returnType,
-		Body:       body,
-		location:   location,
-	}
 }
 
 func (n *FuncDeclaration) String(indent int) string {

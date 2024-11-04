@@ -1,0 +1,17 @@
+// Basic await expression
+await somePromise
+
+// Await with function call
+await getData()
+
+// Await with member access
+await obj.method()
+
+// Await with complex expression
+await (1 + 2)
+
+// Await in async function
+async func test() {
+    var result = await fetch()
+    await result.json()
+}

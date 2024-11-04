@@ -43,6 +43,7 @@
   - [x] Not (not)
 - [x] Member access (obj.prop)
 - [x] Function calls
+- [x] await expressions
 - [ ] Array literals
   - [ ] Bracket access (array[0])
 - [ ] Map literals

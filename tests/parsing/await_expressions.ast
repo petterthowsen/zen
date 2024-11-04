@@ -1,0 +1,39 @@
+Program
+  ExpressionStatement
+    Await:
+      Identifier: somePromise
+  ExpressionStatement
+    Await:
+      Call
+        Callee:
+          Identifier: getData
+  ExpressionStatement
+    Await:
+      Call
+        Callee:
+          MemberAccess(method)
+            Identifier: obj
+  ExpressionStatement
+    Await:
+      Binary: +
+        Literal: 1
+        Literal: 2
+  FuncDeclaration test
+    Parameters:
+    ReturnType:     void
+    Body:
+      Var Declaration
+        Name: result
+        Initializer:
+          Await:
+            Call
+              Callee:
+                Identifier: fetch
+
+      ExpressionStatement
+        Await:
+          Call
+            Callee:
+              MemberAccess(json)
+                Identifier: result
+

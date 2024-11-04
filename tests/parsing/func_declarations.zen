@@ -21,3 +21,8 @@ func log(message:string, suffix:string?) {
        print(message)
     }
 }
+
+// async function
+async func fetch(url:string) {
+    print("hello")
+}
