@@ -1,8 +1,8 @@
 # Zen Programming Language
 
-Zen is a high-level interpreted programming language implemented in Go. It features a clean syntax, strong typing, and modern programming concepts.
+Zen is a high-level interpreted programming language implemented in Go. It strong typing with type inference where possible and OOP features.
 
-See spec.zen for example of zen code.
+See spec.zen for detailed examples of zen code.
 
 ## Project Structure
 
@@ -11,7 +11,7 @@ zenlang/
 ├── lang/                   # Core language implementation
 │   ├── common/            # Common utilities and types
 │   │   ├── SourceCode.go      # Source code handling
-│   │   ├── SourceLocation.go  # Location tracking
+│   │   ├── SourceLocation.go  # Source code Location tracking (line, column and filename)
 │   │   └── SyntaxError.go     # Error handling
 │   ├── lexing/            # Lexical analysis
 │   │   ├── Lexer.go          # Token generation
@@ -34,12 +34,12 @@ zenlang/
 │       │   ├── ReturnStatement.go      # Return statements
 │       │   ├── VarDeclaration.go       # Variable declarations
 │       │   └── WhileStatement.go       # While loops
-│       └── Parser.go         # Parser implementation
+│       └── Parser.go         # Main Parser implementation
 ├── tests/                 # Test suite
 │   ├── lexing/           # Lexer tests
 │   └── parsing/          # Parser tests
 ├── spec.zen              # Language specification
-└── grammar.ebnf          # Formal grammar definition
+└── grammar.ebnf          # Formal grammar definition (Out of date!)
 ```
 
 ## Features
@@ -57,10 +57,12 @@ zenlang/
 - Binary operations (+, -, *, /, %, ==, !=, <, >, <=, >=, and, or)
 - Unary operations (-, not)
 - Member access (obj.prop, obj.nested.prop)
+- Bracket access for arrays (myArray[5])
+- Curly access for maps (myMap{"name"})
 - Function calls
 
 ### Declarations
-- Variable declarations with type annotations and nullability
+- Variable declarations with type annotations and nullability with question mark
 - Function declarations with parameters and return types
 
 ## Running Tests
@@ -239,6 +241,112 @@ When implementing new features, use the error system:
 ```go
 p.error("Expected { after new feature declaration")
 ```
+
+## Parser Implementation
+
+The Parser in Zen follows a recursive descent parsing strategy, transforming a sequence of tokens into an Abstract Syntax Tree (AST). Here's how it works:
+
+### Core Components
+
+1. **Parser State Management**
+   - Maintains current position in token stream
+   - Tracks syntax errors
+   - Provides utilities for token consumption and lookahead
+
+2. **Expression Parsing**
+   - Implements operator precedence through recursive descent
+   - Handles binary operations (+, -, *, /, etc.)
+   - Supports unary operations (-, not)
+   - Processes function calls and member access
+   - Parses primary expressions (literals, identifiers, parenthesized expressions)
+
+3. **Statement Parsing**
+   - Recognizes and delegates to specific parsers for:
+     - Variable declarations (var/const)
+     - Function declarations
+     - Control flow (if, for, while)
+     - Break/Continue statements
+     - Return statements
+     - Expression statements
+
+### Parsing Process
+
+1. **Token Stream Processing**
+   ```go
+   func (p *Parser) Parse() (*ast.ProgramNode, []*common.SyntaxError) {
+       statements := make([]ast.Statement, 0)
+       for !p.isAtEnd() {
+           stmt := p.parseStatement()
+           if stmt != nil {
+               statements = append(statements, stmt)
+           }
+       }
+       return ast.NewProgramNode(statements), p.errors
+   }
+   ```
+
+2. **Expression Precedence**
+   The parser handles operator precedence through a series of recursive functions:
+   ```
+   parseExpression
+   └── parseAssignment
+       └── parseLogicalOr
+           └── parseLogicalAnd
+               └── parseEquality
+                   └── parseComparison
+                       └── parseAdditive
+                           └── parseMultiplicative
+                               └── parseUnary
+                                   └── parsePostfix
+                                       └── parseCall
+                                           └── parsePrimary
+   ```
+
+3. **Error Recovery**
+   - Implements synchronization points for error recovery
+   - Continues parsing after encountering errors
+   - Maintains error context for debugging
+
+### Key Features
+
+1. **Flexible Statement Parsing**
+   ```go
+   func (p *Parser) parseStatement() ast.Statement {
+       if p.matchKeyword("var", "const") {
+           return p.parseVarDeclaration()
+       }
+       if p.matchKeyword("func") {
+           return p.parseFuncDeclaration()
+       }
+       // ... other statement types
+   }
+   ```
+
+2. **Expression Handling**
+   ```go
+   func (p *Parser) parseAdditive() ast.Expression {
+       expr := p.parseMultiplicative()
+       for p.match(lexing.PLUS, lexing.MINUS) {
+           operator := p.previous().Literal
+           right := p.parseMultiplicative()
+           expr = expression.NewBinaryExpression(expr, operator, right, p.previous().Location)
+       }
+       return expr
+   }
+   ```
+
+3. **Error Handling**
+   ```go
+   func (p *Parser) synchronize() bool {
+       for !p.isAtEnd() {
+           if p.checkKeyword("var") || p.checkKeyword("func") {
+               return true // Found a synchronization point
+           }
+           p.advance()
+       }
+       return false
+   }
+   ```
 
 ## Contributing
 

@@ -63,7 +63,7 @@ func (n *VarDeclarationNode) String(indent int) string {
 	sb.WriteString(fmt.Sprintf("%s  Name: %s\n", indentStr, n.Name))
 	if n.Type != nil {
 		sb.WriteString(fmt.Sprintf("%s  Type:\n", indentStr))
-		sb.WriteString(n.Type.String(indent + 2))
+		sb.WriteString(n.Type.String(indent+2) + "\n")
 	}
 
 	// Write initializer if present
