@@ -15,6 +15,8 @@ var config = {"title": "hello", "volume": 0.5}
 	    "title": "hello"
 	    "volume": 0.5
 	}
+
+config{"title"} = "world"
 */
 func TestMaps(t *testing.T) {
 	expected := []TokenAssert{
@@ -51,6 +53,16 @@ func TestMaps(t *testing.T) {
 		{Type: lexing.FLOAT, Literal: "0.5"},
 
 		{Type: lexing.RIGHT_BRACE, Literal: "}"},
+
+		// config{"title"} = "world"
+		{Type: lexing.IDENTIFIER, Literal: "config"},
+		{Type: lexing.LEFT_BRACE, Literal: "{"},
+		{Type: lexing.STRING, Literal: "title"},
+		{Type: lexing.RIGHT_BRACE, Literal: "}"},
+
+		{Type: lexing.ASSIGN, Literal: "="},
+
+		{Type: lexing.STRING, Literal: "world"},
 	}
 
 	LoadAndAssertTokens(t, "maps.zen", expected)

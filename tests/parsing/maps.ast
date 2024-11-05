@@ -1,0 +1,53 @@
+Program
+  Var Declaration
+    Name: person
+    Initializer:
+      MapLiteral:
+        Key:
+        Literal: name
+        Value:
+          Literal: john
+
+        Key:
+        Literal: age
+        Value:
+          Literal: 30
+  Var Declaration
+    Name: settings
+    Type:
+      Map<string, float>
+    Initializer:
+      MapLiteral:
+        Key:
+        Literal: volume
+        Value:
+          Literal: 0.5
+
+        Key:
+        Literal: brightness
+        Value:
+          Literal: 1
+  Var Declaration
+    Name: empty
+    Initializer:
+      MapLiteral:
+  Var Declaration
+    Name: nested
+    Initializer:
+      MapLiteral:
+        Key:
+        Literal: user
+        Value:
+          MapLiteral:
+            Key:
+            Literal: name
+            Value:
+              Literal: alice
+
+            Key:
+            Literal: scores
+            Value:
+              ArrayLiteral:
+                Literal: 100
+                Literal: 95
+                Literal: 98

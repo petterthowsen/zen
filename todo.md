@@ -44,9 +44,9 @@
 - [x] Member access (obj.prop)
 - [x] Function calls
 - [x] await expressions
-- [ ] Array literals
+- [x] Array literals
   - [ ] Bracket access (array[0])
-- [ ] Map literals
+- [x] Map literals
   - [ ] Curly access (map{"key"})
 - [ ] Tuple Literals (("status": 404, "body": "not found"))
   - [ ] Tuple destructuring (var status, body <= resultTuple)

@@ -1,0 +1,16 @@
+Program
+  Var Declaration
+    Name: numbers
+    Initializer:
+      ArrayLiteral:
+        Literal: 42
+        Literal: 1337
+        Literal: 7
+  Var Declaration
+    Name: floats
+    Type:
+      Array<float, 2>
+    Initializer:
+      ArrayLiteral:
+        Literal: 3.14
+        Literal: 1.62

@@ -6,10 +6,8 @@ import (
 )
 
 /*
-// single line
 var numbers = [1, 2, 3]
 
-// multiline
 var strings = [
 
 	"one"
@@ -17,6 +15,10 @@ var strings = [
 	"three"
 
 ]
+
+numbers[0] = 2
+
+strings[1] = "one edited"
 */
 func TestArrays(t *testing.T) {
 	expected := []TokenAssert{
@@ -44,6 +46,25 @@ func TestArrays(t *testing.T) {
 		{Type: lexing.STRING, Literal: "three"},
 
 		{Type: lexing.RIGHT_BRACKET, Literal: "]"},
+
+		// numbers[0] = 2
+		{Type: lexing.IDENTIFIER, Literal: "numbers"},
+		{Type: lexing.LEFT_BRACKET, Literal: "["},
+		{Type: lexing.INT, Literal: "0"},
+
+		{Type: lexing.RIGHT_BRACKET, Literal: "]"},
+
+		{Type: lexing.ASSIGN, Literal: "="},
+
+		{Type: lexing.INT, Literal: "2"},
+
+		// strings[1] = "one edited"
+		{Type: lexing.IDENTIFIER, Literal: "strings"},
+		{Type: lexing.LEFT_BRACKET, Literal: "["},
+		{Type: lexing.INT, Literal: "1"},
+		{Type: lexing.RIGHT_BRACKET, Literal: "]"},
+		{Type: lexing.ASSIGN, Literal: "="},
+		{Type: lexing.STRING, Literal: "one edited"},
 	}
 
 	LoadAndAssertTokens(t, "arrays.zen", expected)

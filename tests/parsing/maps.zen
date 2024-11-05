@@ -1,0 +1,16 @@
+// inferred type
+var person = { "name": "john", "age": 30 }
+
+// explicit type
+var settings : Map<string, float> = { "volume": 0.5, "brightness": 1.0 }
+
+// empty map
+var empty = { }
+
+// nested map
+var nested = {
+    "user": {
+        "name": "alice",
+        "scores": [100, 95, 98]
+    }
+}

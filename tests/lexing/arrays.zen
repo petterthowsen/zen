@@ -7,3 +7,7 @@ var strings = [
     "two"
     "three"
 ]
+
+numbers[0] = 2
+
+strings[1] = "one edited"

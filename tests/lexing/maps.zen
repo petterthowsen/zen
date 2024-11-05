@@ -6,3 +6,5 @@ var config = {
     "title": "hello"
     "volume": 0.5
 }
+
+config{"title"} = "world"

@@ -43,6 +43,8 @@ type Visitor interface {
 	VisitExpressionStatement(node Statement) interface{}
 	VisitFuncDeclaration(node Statement) interface{}
 	VisitFuncParameterExpression(node Expression) interface{}
+	VisitArrayLiteral(node Expression) interface{}
+	VisitMapLiteral(node Expression) interface{}
 	VisitForStatement(node Statement) interface{}
 	VisitForInStatement(node Statement) interface{}
 	VisitBreakStatement(node Statement) interface{}

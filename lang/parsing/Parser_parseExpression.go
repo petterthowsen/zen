@@ -272,6 +272,12 @@ func (p *Parser) parsePrimary() ast.Expression {
 	token := p.peek()
 
 	switch token.Type {
+	case lexing.LEFT_BRACKET:
+		return p.parseArrayLiteral()
+
+	case lexing.LEFT_BRACE:
+		return p.parseMapLiteral()
+
 	case lexing.STRING:
 		p.advance()
 		return expression.NewLiteralExpression(token.Literal, token.Location)
