@@ -14,6 +14,10 @@ type SourceLocation struct {
 
 // String returns a formatted string representing the source location in the format "Line %d, Column %d".
 func (sl *SourceLocation) String() string {
+	// check if Source is FileSourceCode
+	if _, ok := sl.Source.(*FileSourceCode); ok {
+		return fmt.Sprintf("%s:%d:%d", sl.Source.(*FileSourceCode).Path, sl.Line, sl.Column)
+	}
 	return fmt.Sprintf("Line %d, Column %d", sl.Line, sl.Column)
 }
 

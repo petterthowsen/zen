@@ -1,168 +1,242 @@
-# Proposal for Execution System
-The following is a very general and loosely sketched proposal for the interpreter/runtime system for Zen.
+# Zen Language Interpreter Design
 
-It should:
-- Run in a single-threaded event loop and supports the `async` and `await` keywords to handle asynchronous programming.
-- Support exceptions with `throw`, `try`, `catch` statements.
-- Execution "environments" or "scopes" that can be created and forked from parent environments (functions have their own scope, as do for loops etc. but might have access to their parent scope in some contexts.)
-- Error reporting with stack traces
-- Robust type system with support for parametric types (generics such as `Array<int, 5>`)
-- Flexible namespace/import system
+## Overview
 
-At some point, we should consider adding support for true concurrency, probably via goroutines.
+Zen is a strictly-typed, interpreted language with support for modern programming features including async/await, exception handling, and generics. The interpreter is implemented in Go and provides seamless interoperability with Go code.
 
-## Type system
-Zen is strictly typed, with type inference. We also need to support type casting/conversion.
-Probably by providing built in functions `string()`, `ìnt()` etc.
+## Core Components
 
-Zen's type system has a number of primitive types supported:
-- int (signed 32 bit integer)
-- int64 (signed 64 bit integer)
-- float (signed 32 bit float)
-- float64 (signed 64 bit float)
-- bool
-- null
+### 1. Runtime Environment
 
-Additionally, the 'any' type-hint denotes an untyped/mixed-type variable.
+#### Initial Implementation
+- Tree-walk interpreter for simplicity and rapid prototyping
+- Direct AST execution without intermediate representation
+- Focus on correctness over performance initially
 
-Nullability is enabled with QMARK token, I.E `var name = string?`
+#### Event Loop & Async Execution (Future)
+- Single-threaded event loop architecture
+- Custom scheduling system for async tasks
+- Async/sync versions of common operations (similar to Node.js)
+- Built-in async operations:
+  - File I/O
+  - Network operations
+  - Timer functions
 
-### Tokens
-These are supported by the lexer's:
-KEYWORD tokens for type-hints:
-- these KEYWORD tokens (token.literal): "int", "int64", "float", "float64", "string", "bool"
+**Open Questions:**
+- Specific scheduling algorithm for async tasks
+- Integration with OS-level async primitives
+- Potential future support for true concurrency via goroutines
 
-and these KEYWORD tokens for literal values:
-- "true", "false", "null", "void"
+### 2. Type System
 
-and number and string literals have their own tokens types:
-- STRING for "some strings"
-- INT for "123" or "42"
-- FLOAT for "3.14" or "-9.0"
+#### Initial Implementation
+- Explicit typing only (type inference to be added later)
+- Static type checking during semantic analysis phase
+- Runtime type verification during execution
 
-Other types include Array, Map and any other custom classes.
+#### Primitive Types
+- `int` (32-bit signed integer)
+- `int64` (64-bit signed integer)
+- `float` (32-bit floating point)
+- `float64` (64-bit floating point)
+- `bool`
+- `string`
+- `null`
+- `any` (for mixed-type variables)
 
-### Parsing
+#### Type Features
+- Strict typing
+- Nullability via question mark (`string?`)
+- Type conversion functions (`string()`, `int()`, etc.)
+- Union types (e.g., `string | int`)
+- Numeric type coercion rules:
+  - Allow implicit conversion when no precision is lost
+  - Require explicit conversion when precision might be lost
+  - Runtime error on overflow/underflow
 
-At the AST level, types are represented by either the BasicType or ParametricType nodes.
+#### Parametric Types (Generics)
+- Support for both type and non-type parameters
+- Example: `Array<T, size>` where T is a type and size is an integer
+- No constraints on type parameters initially (future consideration)
 
-# Semantic analysis, Type-checking
-After parsing, we should run through the AST and:
-- perform type inference
-- symbol resolution and import resolving
-- constant folding (5+3 becomes 7 etc.)
-- error reporting based on the above steps
+### 3. Error Handling
 
-# Namespaces, Built ins & interfacing with Go 
-Zen's runtime/execution system should support the ability to easily register built in functions at the Go level that become available in Zen, allowing interfacing with Go at a low level and handle namespacing and importing of other zen code.
+#### Initial Implementation
+- Simple error propagation
+- Basic error types
+- Stack trace generation
 
-Off the top of my head, something like this:
-```go
-printFunc := runtime.createFunction("print")
-printFunc.addVariadicParameter()
-printFunc.setFunction(func(runtime *runtime, ...params))
+#### Future Exception System
+- Keywords: `throw`, `try`, `catch`, `finally`
+- Support for multiple catch blocks by error type
+- Finally block executes after try/catch completion
+- Uncaught exceptions terminate program with stack trace
+- Built-in error types hierarchy
 
-runtime.registerFunction("sys", printFunc)
-```
+### 4. Scoping & Environments
 
-And similarly for packages, namespaces etc.
+#### Scope Chain
+- Lexical scoping
+- Environment chain for variable resolution
+- Each scope type has specific behavior:
+  - Global scope
+  - Function scope
+  - Block scope (if, for, etc.)
+  - Module scope
 
-This system would need to be thought out properly in detail.
+#### Memory Management
+- Reference counting for object lifecycle management
+- Circular reference detection
+- Deterministic resource cleanup
 
-## Namespaces & Imports
-```go (actually zen but no syntax highlighting for that)
-//-----------------------------------//
-// Namespaces, Packages, and Imports
-//-----------------------------------//
-// Zen organizes code into namespaces based on folder structure.
-// - Folders represent namespaces.
-// - Each `.zen` file in a given namespace is a "module".
-// - Modules can define one or more symbols (functions, classes, etc.).
-// - Zen projects define their root namespace through a `package.zen` file.
-// - When importing, Zen automatically treats modules as namespaces if they
-//   contain more than one symbol, simplifying import syntax and scoping.
-//
-// Note: Zen ignores any files starting with an underscore.
-// This is to allow developers to create .zen files without in their package for other purposes.
+### 5. Go Interoperability
 
-//-----------------------------------
-// Example Directory Structure:
+#### Type Mapping
+| Go Type | Zen Type |
+|---------|-----------|
+| string | string |
+| int/int32 | int |
+| int64 | int64 |
+| float32 | float |
+| float64 | float64 |
+| bool | bool |
+| nil | null |
+| interface{} | any |
 
-// GameEngine/
-// - package.zen
-// - Core/
-// -- Vector2.zen
-// -- Utils.zen
-// -- Nested/
-// --- Special.zen
+**Open Questions:**
+- Handling of Go pointers in Zen
+- Struct field access methodology
+- Interface implementation strategy
 
-// where `package.zen` contains
-package GameEngine
+### 6. Module System
 
-// where `Utils.zen` contains:
-func hello() {}
-func world() {}
- 
-// where `Vector2.zen` contains:
-class Vector2 {
-    x: int
-    y: int
-}
-
-// where `Special.zen` contains:
-func specialFunc() {}
-
-//-----------------------------------
-// Import Syntax
-
-// Zen supports multiple ways to import modules and symbols within namespaces, 
-// with automatic handling for single-symbol vs. multi-symbol modules:
-
-// 1. Import Namespace: Imports all symbols from all modules directly under
-//    the specified namespace if the module has multiple symbols.
-
+#### Package Organization
+- Namespace-based organization following directory structure
+- Package declaration in `package.zen`
+- Module-level symbol management
+- Flexible import syntax:
+```zen
+// Direct namespace import
 import GameEngine/Core
-hello()         // Available directly
-world()         // Available directly
-var vec2 = Vector2() // Only if Vector2 is defined as part of GameEngine/Core
 
-// 2. Import Namespace with Scoped Alias: Imports all symbols but keeps them
-//    scoped under an alias.
+// Aliased import
+import GameEngine/Core as gc
 
-import GameEngine/Core as gec
-gec.hello()     // Scoped access
-gec.world()     // Scoped access
-
-// 3. Importing a Single-symbol Module Directly: If a module defines only
-//    a single symbol, it is imported directly by default.
-
+// Single symbol import
 import GameEngine/Core/Vector2
-var vec2 = Vector2() // Direct access without specifying symbol name
 
-// 4. Importing a Single-symbol Module with Alias: You can alias a single-symbol
-//    module for clarity or disambiguation.
-
-import GameEngine/Core/Vector2 as CoreVector2
-var vec2 = CoreVector2()
-
-// 5. Importing Specific Symbols from a Multi-symbol Module: If a module defines 
-//    multiple symbols, you can selectively import symbols using the `from` syntax.
-
-from GameEngine/Core/Utils import hello
-hello()        // Directly accessible
-world()        // Error: not imported
-
-// Notes:
-// - Modules with more than one symbol are treated as namespaces, 
-//   allowing flexible import and scoping.
-// - Single-symbol modules are directly accessible upon import, 
-//   reducing verbosity and improving readability.
-// - Aliasing with `as` works for both single-symbol and multi-symbol modules.
+// Selective import
+from GameEngine/Core/Utils import hello, world
 ```
 
-## Exposing low-level Go-related functions to zen
+## Implementation Structure
 
-Much of the barebones functionality such as I/O will be supported by custom implementations that bridge Zen -> Go.
-However, we might expose a set of low-level functions that will allow Zen developers to interface more directly with Go, for the purpose of making some Go libraries available in Zen. I believe this is called "Bindings".
+```
+zenlang/
+├── lang/
+│   ├── common/            # Shared utilities
+│   ├── lexing/            # Lexical analysis
+│   └── parsing/           # Syntax analysis
+├── runtime/
+│   ├── environment/
+│   │   ├── Scope.go         # Scope implementation
+│   │   └── Environment.go   # Environment chain
+│   ├── types/
+│   │   ├── Type.go         # Type interface
+│   │   ├── BasicType.go    # Primitive types
+│   │   └── ParametricType.go # Generic types
+│   ├── async/
+│   │   ├── EventLoop.go    # Event loop implementation
+│   │   └── Task.go         # Async task representation
+│   ├── errors/
+│   │   ├── Exception.go    # Base exception type
+│   │   └── ErrorTypes.go   # Built-in error types
+│   └── interop/
+│       ├── Convert.go      # Go-Zen type conversion
+│       └── Binding.go      # Go function binding
+├── interpreter/
+│   ├── Interpreter.go      # Main interpreter
+│   ├── Evaluator.go        # Expression evaluation
+│   └── Executor.go         # Statement execution
+├── semantic/
+│   ├── Analyzer.go         # Semantic analysis
+│   ├── TypeChecker.go      # Type checking
+│   └── SymbolResolver.go   # Symbol resolution
+└── builtins/
+    ├── io/                 # I/O operations
+    ├── net/                # Network operations
+    └── core/               # Core functions
+```
 
-We may also provide Reflection capabilities and the like.
+## Development Phases
+
+1. **Phase 1: Core Runtime**
+   - Tree-walk interpreter implementation
+   - Basic expression evaluation
+   - Simple statement execution
+   - Explicit type system
+   - Basic error propagation
+
+2. **Phase 2: Semantic Analysis**
+   - Symbol resolution
+   - Type checking
+   - Basic optimizations
+   - Constant folding
+
+3. **Phase 3: Type System Enhancement**
+   - Type inference
+   - Parametric types
+   - Union types
+   - Advanced type checking
+
+4. **Phase 4: Error Handling**
+   - Full exception system
+   - Stack traces
+   - Error types hierarchy
+
+5. **Phase 5: Async Support**
+   - Event loop
+   - Async/await
+   - Promise-like functionality
+
+6. **Phase 6: Go Interop**
+   - Type conversion
+   - Function binding
+   - Interface mapping
+
+7. **Phase 7: Module System**
+   - Package management
+   - Import resolution
+   - Namespace handling
+
+## Testing Strategy
+
+1. **Unit Tests**
+   - Individual component testing
+   - Type system verification
+   - Error handling scenarios
+
+2. **Integration Tests**
+   - Cross-component interaction
+   - End-to-end execution
+   - Go interop verification
+
+3. **Performance Tests**
+   - Memory usage
+   - Execution speed
+   - Async operation efficiency
+
+## Future Considerations
+
+1. **Performance Optimization**
+   - Memory management improvements
+
+2. **Language Features**
+   - True concurrency support
+   - Advanced type constraints
+   - Reflection capabilities
+
+3. **Developer Tools**
+   - Debugger
+   - Profiler
+   - Language server protocol support
