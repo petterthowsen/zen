@@ -8,24 +8,32 @@ See spec.zen for detailed examples of zen code.
 
 ```
 zenlang/
-├── lang/                   # Core language implementation
-│   ├── common/            # Common utilities and types
+├── lang/                      # Core language implementation
+│   ├── common/                # Common utilities and types
 │   │   ├── SourceCode.go      # Source code handling
 │   │   ├── SourceLocation.go  # Source code Location tracking (line, column and filename)
 │   │   └── SyntaxError.go     # Error handling
-│   ├── lexing/            # Lexical analysis
-│   │   ├── Lexer.go          # Token generation
-│   │   └── Token.go          # Token definitions
-│   └── parsing/           # Syntax analysis
-│       ├── ast/              # Abstract Syntax Tree definitions
-│       ├── expression/       # Expression nodes
-│       ├── statement/        # Statement nodes
-│       └── Parser.go         # Main Parser implementation
-├── tests/                 # Test suite
-│   ├── lexing/           # Lexer tests
-│   └── parsing/          # Parser tests
-├── spec.zen              # Language specification
-└── grammar.ebnf          # Formal grammar definition (Out of date!)
+│   ├── lexing/                # Lexical analysis
+│   │   ├── Lexer.go           # Token generation
+│   │   └── Token.go           # Token definitions
+│   └── parsing/               # Syntax analysis
+│       ├── ast/               # Abstract Syntax Tree definitions
+│       ├── expression/        # Expression nodes
+│       ├── statement/         # Statement nodes
+│       └── Parser.go          # Main Parser implementation
+|── interpreter/               # Main entry-point for execution              
+|── runtime/
+|   ├── async/                 # Event loop system
+|   ├── environment/           # Execution environment and scopes
+|   ├── errors/             
+|   ├── interop/               # Interoperability with Go
+|   ├── types/                 # Values, Primitives, Type Conversion / Coercion / operations 
+├── tests/                     # Test suite
+│   ├── lexing/                # Lexer tests
+│   └── parsing/               # Parser tests
+│   └── interpreter/               # Execution tests
+├── spec.zen                   # Language specification
+└── grammar.ebnf               # Formal grammar definition (Out of date!)
 ```
 
 ## Features

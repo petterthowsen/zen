@@ -259,7 +259,7 @@ func (i *Interpreter) executeVarDeclaration(stmt *statement.VarDeclarationNode) 
 	// If no initializer and not nullable, that's an error
 	if stmt.Initializer == nil && !stmt.IsNullable {
 		return &RuntimeError{
-			Message:  fmt.Sprintf("Variable '%s' must be initialized or marked as nullable", stmt.Name),
+			Message:  fmt.Sprintf("Variable '%s' must either be initialized or declared as nullable.", stmt.Name),
 			Location: stmt.GetLocation(),
 		}
 	}
@@ -268,7 +268,7 @@ func (i *Interpreter) executeVarDeclaration(stmt *statement.VarDeclarationNode) 
 	if stmt.IsConstant {
 		if stmt.Initializer == nil {
 			return &RuntimeError{
-				Message:  fmt.Sprintf("Constant '%s' must be initialized", stmt.Name),
+				Message:  fmt.Sprintf("Constant '%s' must be initialized. Did you mean 'var %s' ?", stmt.Name, stmt.Name),
 				Location: stmt.GetLocation(),
 			}
 		}
