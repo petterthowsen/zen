@@ -13,6 +13,7 @@ const (
 	TypeString
 	TypeBool
 	TypeNull
+	TypeVoid
 )
 
 // String returns the string representation of a Type
@@ -32,6 +33,8 @@ func (t Type) String() string {
 		return "bool"
 	case TypeNull:
 		return "null"
+	case TypeVoid:
+		return "void"
 	default:
 		return "unknown"
 	}

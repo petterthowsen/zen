@@ -1,6 +1,10 @@
 package environment
 
-import "fmt"
+import (
+	"fmt"
+	"zen/builtins/global"
+	"zen/runtime/types"
+)
 
 // Environment manages the scope chain and provides high-level operations
 // for variable management and scope creation
@@ -55,6 +59,11 @@ func (e *Environment) DefineNullable(name string, value interface{}) error {
 // DefineGlobal creates a new variable in the global scope
 func (e *Environment) DefineGlobal(name string, value interface{}) error {
 	return e.global.Define(name, value)
+}
+
+func (e *Environment) RegisterBuiltInFunctions() {
+	printFn := types.NewBuiltinFunction("print", []types.FunctionParameter{{Name: "value"}}, nil, false, global.Print)
+	e.global.Define("print", printFn)
 }
 
 // Get retrieves a variable's value from the current scope chain
