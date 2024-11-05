@@ -35,9 +35,25 @@ func (e *BinaryExpression) GetLocation() *common.SourceLocation {
 func (e *BinaryExpression) IsExpression() {}
 
 func (e *BinaryExpression) String(indent int) string {
+	indentStr := strings.Repeat("  ", indent)
+	var leftStr, rightStr string
+
+	// Handle nil values gracefully
+	if e.Left == nil {
+		leftStr = indentStr + "  <nil>\n"
+	} else {
+		leftStr = e.Left.String(indent + 1)
+	}
+
+	if e.Right == nil {
+		rightStr = indentStr + "  <nil>\n"
+	} else {
+		rightStr = e.Right.String(indent + 1)
+	}
+
 	return fmt.Sprintf("%sBinary: %s\n%s%s",
-		strings.Repeat("  ", indent),
+		indentStr,
 		e.Operator,
-		e.Left.String(indent+1),
-		e.Right.String(indent+1))
+		leftStr,
+		rightStr)
 }

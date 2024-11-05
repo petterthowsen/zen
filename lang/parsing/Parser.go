@@ -7,20 +7,44 @@ import (
 )
 
 type Parser struct {
-	tokens           []lexing.Token
-	current          int
-	stopAtFirstError bool
-	errors           []*common.SyntaxError
+	tokens             []lexing.Token
+	current            int
+	stopAtFirstError   bool
+	errors             []*common.SyntaxError
+	mapAccessEnabled   bool // Flag to control map access parsing
+	arrayAccessEnabled bool // Flag to control array access parsing
 }
 
 // NewParser creates a new Parser instance
 func NewParser(tokens []lexing.Token, stopAtFirstError bool) *Parser {
 	return &Parser{
-		tokens:           tokens,
-		current:          0,
-		stopAtFirstError: stopAtFirstError,
-		errors:           make([]*common.SyntaxError, 0),
+		tokens:             tokens,
+		current:            0,
+		stopAtFirstError:   stopAtFirstError,
+		errors:             make([]*common.SyntaxError, 0),
+		mapAccessEnabled:   true, // Enable by default
+		arrayAccessEnabled: true, // Enable by default
 	}
+}
+
+// DisableMapAccess temporarily disables map access parsing
+func (p *Parser) DisableMapAccess() {
+	p.mapAccessEnabled = false
+}
+
+// EnableMapAccess enables map access parsing
+func (p *Parser) EnableMapAccess() {
+	p.mapAccessEnabled = true
+}
+
+// DisableArrayAccess temporarily disables array access parsing
+func (p *Parser) DisableArrayAccess() {
+	p.arrayAccessEnabled = false
+}
+
+// EnableArrayAccess enables array access parsing
+func (p *Parser) EnableArrayAccess() {
+	p.arrayAccessEnabled = true
 }
 
 // Parse takes an array of tokens and produces an AST with a ProgramNode as the root node.

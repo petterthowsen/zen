@@ -51,3 +51,47 @@ Program
                 Literal: 100
                 Literal: 95
                 Literal: 98
+  ExpressionStatement
+    Call
+      Callee:
+        Identifier: print
+      Arguments:
+        MapAccess:
+          Map:
+            Identifier: person
+          Key:
+            Literal: name
+  Var Declaration
+    Name: user
+    Initializer:
+      MapAccess:
+        Map:
+          Identifier: nested
+        Key:
+          Literal: user
+  Var Declaration
+    Name: firstScore
+    Initializer:
+      ArrayAccess:
+        Array:
+          MapAccess:
+            Map:
+              MapAccess:
+                Map:
+                  Identifier: nested
+                Key:
+                  Literal: user
+            Key:
+              Literal: scores
+        Index:
+          Literal: 0
+  Var Declaration
+    Name: complex
+    Initializer:
+      MapAccess:
+        Map:
+          Identifier: nested
+        Key:
+          Binary: +
+            Identifier: key
+            Literal: _something

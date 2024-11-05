@@ -14,3 +14,21 @@ Program
       ArrayLiteral:
         Literal: 3.14
         Literal: 1.62
+  ExpressionStatement
+    Call
+      Callee:
+        Identifier: print
+      Arguments:
+        ArrayAccess:
+          Array:
+            Identifier: numbers
+          Index:
+            Literal: 1
+  Const Declaration
+    Name: PI
+    Initializer:
+      ArrayAccess:
+        Array:
+          Identifier: floats
+        Index:
+          Literal: 0

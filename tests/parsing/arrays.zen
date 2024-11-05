@@ -3,3 +3,8 @@ var numbers = [42, 1337, 7]
 
 // explicit type
 var floats : Array<float, 2> = [3.14, 1.62]
+
+// access
+print(numbers[1])
+
+const PI = floats[0]

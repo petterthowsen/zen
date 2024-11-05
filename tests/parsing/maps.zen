@@ -14,3 +14,10 @@ var nested = {
         "scores": [100, 95, 98]
     }
 }
+
+// access
+print(person{"name"})
+
+var user = nested{"user"}
+var firstScore = nested{"user"}{"scores"}[0]
+var complex = nested{key + "_something"}

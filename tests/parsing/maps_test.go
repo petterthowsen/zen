@@ -3,6 +3,7 @@ package parsing
 import (
 	"testing"
 	"zen/lang/parsing/expression"
+	"zen/lang/parsing/statement"
 )
 
 func TestMapLiterals(t *testing.T) {
@@ -112,4 +113,68 @@ func TestMapLiterals(t *testing.T) {
 	AssertLiteralExpression(t, scores.Elements[0], int64(100))
 	AssertLiteralExpression(t, scores.Elements[1], int64(95))
 	AssertLiteralExpression(t, scores.Elements[2], int64(98))
+
+	// print(person{"name"})
+	exprStmt, ok := programNode.Statements[4].(*statement.ExpressionStatement)
+	if !ok {
+		t.Errorf("Expected ExpressionStatement, got %T", programNode.Statements[4])
+		return
+	}
+	call := AssertCallExpression(t, exprStmt.Expression, 1)
+	AssertIdentifierExpression(t, call.Callee, "print")
+	mapAccess, ok := call.Arguments[0].(*expression.MapAccessExpression)
+	if !ok {
+		t.Errorf("Expected MapAccessExpression, got %T", call.Arguments[0])
+		return
+	}
+	AssertIdentifierExpression(t, mapAccess.Map, "person")
+	AssertLiteralExpression(t, mapAccess.Key, "name")
+
+	// var user = nested{"user"}
+	varDecl = AssertVarDeclaration(t, programNode.Statements[5], "user", false, false)
+	mapAccess, ok = varDecl.Initializer.(*expression.MapAccessExpression)
+	if !ok {
+		t.Errorf("Expected MapAccessExpression, got %T", varDecl.Initializer)
+		return
+	}
+	AssertIdentifierExpression(t, mapAccess.Map, "nested")
+	AssertLiteralExpression(t, mapAccess.Key, "user")
+
+	// var firstScore = nested{"user"}{"scores"}[0]
+	varDecl = AssertVarDeclaration(t, programNode.Statements[6], "firstScore", false, false)
+	arrayAccess, ok := varDecl.Initializer.(*expression.ArrayAccessExpression)
+	if !ok {
+		t.Errorf("Expected ArrayAccessExpression, got %T", varDecl.Initializer)
+		return
+	}
+	mapAccess, ok = arrayAccess.Array.(*expression.MapAccessExpression)
+	if !ok {
+		t.Errorf("Expected MapAccessExpression, got %T", arrayAccess.Array)
+		return
+	}
+	mapAccess2, ok := mapAccess.Map.(*expression.MapAccessExpression)
+	if !ok {
+		t.Errorf("Expected MapAccessExpression, got %T", mapAccess.Map)
+		return
+	}
+	AssertIdentifierExpression(t, mapAccess2.Map, "nested")
+	AssertLiteralExpression(t, mapAccess2.Key, "user")
+	AssertLiteralExpression(t, mapAccess.Key, "scores")
+	AssertLiteralExpression(t, arrayAccess.Index, int64(0))
+
+	// var complex = nested{key + "_something"}
+	varDecl = AssertVarDeclaration(t, programNode.Statements[7], "complex", false, false)
+	mapAccess, ok = varDecl.Initializer.(*expression.MapAccessExpression)
+	if !ok {
+		t.Errorf("Expected MapAccessExpression, got %T", varDecl.Initializer)
+		return
+	}
+	AssertIdentifierExpression(t, mapAccess.Map, "nested")
+	binary, ok := mapAccess.Key.(*expression.BinaryExpression)
+	if !ok {
+		t.Errorf("Expected BinaryExpression, got %T", mapAccess.Key)
+		return
+	}
+	AssertIdentifierExpression(t, binary.Left, "key")
+	AssertLiteralExpression(t, binary.Right, "_something")
 }

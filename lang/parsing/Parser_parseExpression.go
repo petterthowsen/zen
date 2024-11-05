@@ -229,12 +229,83 @@ func (p *Parser) parseCall() ast.Expression {
 			name := p.advance()
 			// Build member access from left to right
 			expr = expression.NewMemberAccessExpression(expr, name.Literal, name.Location)
+		} else if p.match(lexing.LEFT_BRACKET) {
+			// Handle array access (array[index])
+			expr = p.parseArrayAccessExpression(expr)
+			if expr == nil {
+				return nil
+			}
+		} else if p.mapAccessEnabled && p.check(lexing.LEFT_BRACE) && isValidMapAccessTarget(expr) {
+			// Try to parse map access, but back out if it fails
+			if mapExpr := p.tryParseMapAccess(expr); mapExpr != nil {
+				expr = mapExpr
+			} else {
+				break
+			}
 		} else {
 			break
 		}
 	}
 
 	return expr
+}
+
+// tryParseMapAccess attempts to parse map access, returning nil if it fails
+func (p *Parser) tryParseMapAccess(target ast.Expression) ast.Expression {
+	// Save current state
+	current := p.current
+	errorCount := len(p.errors)
+
+	// Try to parse map access
+	p.advance()                // consume {
+	key := p.parseExpression() // Allow any expression as key
+	if key == nil {
+		// Not a valid expression, restore state and return nil
+		p.current = current
+		p.errors = p.errors[:errorCount] // Remove any errors added during the attempt
+		return nil
+	}
+
+	if !p.match(lexing.RIGHT_BRACE) {
+		// No closing brace, restore state and return nil
+		p.current = current
+		p.errors = p.errors[:errorCount] // Remove any errors added during the attempt
+		return nil
+	}
+
+	// Successfully parsed map access
+	return expression.NewMapAccessExpression(target, key, p.previous().Location)
+}
+
+// parseMapKey parses a map key (string, number, or identifier)
+func (p *Parser) parseMapKey() ast.Expression {
+	token := p.peek()
+
+	switch token.Type {
+	case lexing.STRING, lexing.INT, lexing.FLOAT:
+		p.advance()
+		return expression.NewLiteralExpression(token.Literal, token.Location)
+	case lexing.IDENTIFIER:
+		p.advance()
+		return expression.NewIdentifierExpression(token.Literal, token.Location)
+	}
+
+	return nil
+}
+
+// isValidMapAccessTarget returns true if the expression can be the target of map access
+func isValidMapAccessTarget(expr ast.Expression) bool {
+	switch e := expr.(type) {
+	case *expression.IdentifierExpression:
+		// Only allow map access on identifiers that aren't keywords
+		return !lexing.IsKeyword(e.Name)
+	case *expression.MemberAccessExpression,
+		*expression.ArrayAccessExpression,
+		*expression.MapAccessExpression,
+		*expression.CallExpression:
+		return true
+	}
+	return false
 }
 
 // finishCall handles the parsing of function call arguments after '(' has been matched

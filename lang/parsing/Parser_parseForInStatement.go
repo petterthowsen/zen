@@ -3,6 +3,7 @@ package parsing
 import (
 	"zen/lang/lexing"
 	"zen/lang/parsing/ast"
+	"zen/lang/parsing/expression"
 	"zen/lang/parsing/statement"
 )
 
@@ -47,16 +48,32 @@ func (p *Parser) parseForInStatement() ast.Statement {
 		return nil
 	}
 
-	// Parse container expression
+	// Save state before parsing container
+	current := p.current
+	errorCount := len(p.errors)
+
+	// Try parsing container with map access enabled
 	container := p.parseExpression()
 	if container == nil {
 		p.error("Expected expression after 'in'")
 		return nil
 	}
 
+	// If we got a map access but no LEFT_BRACE follows, try again without map access
+	if _, isMapAccess := container.(*expression.MapAccessExpression); isMapAccess {
+		if !p.check(lexing.LEFT_BRACE) {
+			// Restore state and try again with map access disabled
+			p.current = current
+			p.errors = p.errors[:errorCount]
+			p.DisableMapAccess()
+			container = p.parseExpression()
+			p.EnableMapAccess()
+		}
+	}
+
 	// Parse body
 	if !p.match(lexing.LEFT_BRACE) {
-		p.error("Expected '{' before for loop body")
+		p.error("Expected '{' after for loop")
 		return nil
 	}
 

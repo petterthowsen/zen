@@ -3,6 +3,7 @@ package parsing
 import (
 	"testing"
 	"zen/lang/parsing/expression"
+	"zen/lang/parsing/statement"
 )
 
 func TestArrayLiterals(t *testing.T) {
@@ -46,4 +47,30 @@ func TestArrayLiterals(t *testing.T) {
 
 	AssertLiteralExpression(t, arrayLit.Elements[0], float64(3.14))
 	AssertLiteralExpression(t, arrayLit.Elements[1], float64(1.62))
+
+	// print(numbers[1])
+	exprStmt, ok := programNode.Statements[2].(*statement.ExpressionStatement)
+	if !ok {
+		t.Errorf("Expected ExpressionStatement, got %T", programNode.Statements[2])
+		return
+	}
+	call := AssertCallExpression(t, exprStmt.Expression, 1)
+	AssertIdentifierExpression(t, call.Callee, "print")
+	arrayAccess, ok := call.Arguments[0].(*expression.ArrayAccessExpression)
+	if !ok {
+		t.Errorf("Expected ArrayAccessExpression, got %T", call.Arguments[0])
+		return
+	}
+	AssertIdentifierExpression(t, arrayAccess.Array, "numbers")
+	AssertLiteralExpression(t, arrayAccess.Index, int64(1))
+
+	// const PI = floats[0]
+	varDecl = AssertVarDeclaration(t, programNode.Statements[3], "PI", true, false)
+	arrayAccess, ok = varDecl.Initializer.(*expression.ArrayAccessExpression)
+	if !ok {
+		t.Errorf("Expected ArrayAccessExpression, got %T", varDecl.Initializer)
+		return
+	}
+	AssertIdentifierExpression(t, arrayAccess.Array, "floats")
+	AssertLiteralExpression(t, arrayAccess.Index, int64(0))
 }

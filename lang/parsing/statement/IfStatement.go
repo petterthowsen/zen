@@ -15,6 +15,16 @@ type IfStatement struct {
 	ElseBlock        []ast.Statement
 }
 
+func NewIfStatement(condition ast.Expression, body []ast.Statement, elseIfBlocks []*IfConditionBlock, elseBlock []ast.Statement, location *common.SourceLocation) *IfStatement {
+	return &IfStatement{
+		Location:         location,
+		PrimaryCondition: condition,
+		PrimaryBlock:     body,
+		ElseIfBlocks:     elseIfBlocks,
+		ElseBlock:        elseBlock,
+	}
+}
+
 func (i *IfStatement) Accept(visitor ast.Visitor) interface{} {
 	return visitor.VisitIfStatement(i)
 }
