@@ -45,9 +45,9 @@
 - [x] Function calls
 - [x] await expressions
 - [x] Array literals
-  - [ ] Bracket access (array[0])
+  - [x] Bracket access (array[0])
 - [x] Map literals
-  - [ ] Curly access (map{"key"})
+  - [x] Curly access (map{"key"})
 - [ ] Tuple Literals (("status": 404, "body": "not found"))
   - [ ] Tuple destructuring (var status, body <= resultTuple)
   - [ ] Tuple accessors just use regular object access

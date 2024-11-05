@@ -19,21 +19,7 @@ zenlang/
 │   └── parsing/           # Syntax analysis
 │       ├── ast/              # Abstract Syntax Tree definitions
 │       ├── expression/       # Expression nodes
-│       │   ├── BinaryExpression.go     # Binary operations
-│       │   ├── CallExpression.go       # Function calls
-│       │   ├── LiteralExpression.go    # Literals
-│       │   ├── MemberAccessExpression.go # Object property access
-│       │   └── UnaryExpression.go      # Unary operations
 │       ├── statement/        # Statement nodes
-│       │   ├── BreakStatement.go       # Break from loops
-│       │   ├── ContinueStatement.go    # Continue in loops
-│       │   ├── ForStatement.go         # For loops
-│       │   ├── ForInStatement.go       # For-in loops
-│       │   ├── FuncDeclaration.go      # Function declarations
-│       │   ├── IfStatement.go          # If conditions
-│       │   ├── ReturnStatement.go      # Return statements
-│       │   ├── VarDeclaration.go       # Variable declarations
-│       │   └── WhileStatement.go       # While loops
 │       └── Parser.go         # Main Parser implementation
 ├── tests/                 # Test suite
 │   ├── lexing/           # Lexer tests

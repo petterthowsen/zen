@@ -2,12 +2,14 @@
 The following is a very general and loosely sketched proposal for the interpreter/runtime system for Zen.
 
 It should:
-- Run in an event loop and supports the `async` and `await` keywords to handle asynchronous programming.
+- Run in a single-threaded event loop and supports the `async` and `await` keywords to handle asynchronous programming.
 - Support exceptions with `throw`, `try`, `catch` statements.
 - Execution "environments" or "scopes" that can be created and forked from parent environments (functions have their own scope, as do for loops etc. but might have access to their parent scope in some contexts.)
 - Error reporting with stack traces
 - Robust type system with support for parametric types (generics such as `Array<int, 5>`)
 - Flexible namespace/import system
+
+At some point, we should consider adding support for true concurrency, probably via goroutines.
 
 ## Type system
 Zen is strictly typed, with type inference. We also need to support type casting/conversion.
@@ -43,6 +45,13 @@ Other types include Array, Map and any other custom classes.
 ### Parsing
 
 At the AST level, types are represented by either the BasicType or ParametricType nodes.
+
+# Semantic analysis, Type-checking
+After parsing, we should run through the AST and:
+- perform type inference
+- symbol resolution and import resolving
+- constant folding (5+3 becomes 7 etc.)
+- error reporting based on the above steps
 
 # Namespaces, Built ins & interfacing with Go 
 Zen's runtime/execution system should support the ability to easily register built in functions at the Go level that become available in Zen, allowing interfacing with Go at a low level and handle namespacing and importing of other zen code.
