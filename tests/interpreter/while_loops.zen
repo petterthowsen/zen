@@ -1,0 +1,26 @@
+// Basic while loop with counter
+var counter = 0
+while counter < 3 {
+    counter = counter + 1
+}
+
+// While loop with false condition
+var shouldNotChange = 42
+while false {
+    shouldNotChange = 0
+}
+
+// Nested scope test
+var outer = "outer"
+while outer == "outer" {
+    var inner = "inner"
+    outer = "done"
+}
+
+// Counter with multiple conditions
+var x = 0
+var y = 0
+while x < 2 and y < 8 {
+    x = x + 1
+    y = y + x
+}

@@ -1,0 +1,70 @@
+// Basic if statement
+var x = 42
+var result = "unset"
+if x > 40 {
+    result = "greater"
+}
+
+// If-else statement
+var y = 10
+var elseResult = "unset"
+if y > 20 {
+    elseResult = "greater"
+} else {
+    elseResult = "lesser"
+}
+
+// If-else if-else chain
+var z = 15
+var chainResult = "unset"
+if z < 10 {
+    chainResult = "small"
+} elif z < 20 {
+    chainResult = "medium"
+} else {
+    chainResult = "large"
+}
+
+// Nested scopes
+var outer = "outer"
+if true {
+    var inner = "inner"
+    outer = inner
+}
+
+// Multiple conditions
+var a = 5
+var b = 10
+var multiResult = "unset"
+if a < 10 and b > 5 {
+    multiResult = "both true"
+}
+
+// Condition with function call or complex expression
+var n1 = 3
+var n2 = 4
+var mathResult = "unset"
+if n1 * n2 + 2 > 10 {
+    mathResult = "complex true"
+}
+
+// Nested if statements
+var nested = "start"
+if true {
+    if true {
+        nested = "deep"
+    }
+}
+
+// Multiple else-if conditions
+var grade = 85
+var gradeResult = "unset"
+if grade >= 90 {
+    gradeResult = "A"
+} elif grade >= 80 {
+    gradeResult = "B"
+} elif grade >= 70 {
+    gradeResult = "C"
+} else {
+    gradeResult = "F"
+}

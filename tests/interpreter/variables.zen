@@ -1,0 +1,56 @@
+// Basic variable declarations
+var x = 42
+var y = "hello"
+var z = true
+
+// Constants
+const PI = 3.14159
+const MAX_SIZE = 100
+const GREETING = "hello"
+
+// Nullable variables
+var nullableInt : int? = null
+var nullableString : string? = null
+var initializedNullable : string? = "can be null"
+
+// Variable shadowing
+var outer = "outer"
+if true { // unnamed blocks are not supported
+    var outer = "inner"  // New variable, doesn't affect outer scope
+}
+
+// Variable modification
+var counter = 0
+counter = counter + 1
+counter = counter * 2
+
+// Multiple variables with different types
+var name = "Alice"
+var age = 30
+var isStudent = false
+var gpa = 3.85
+
+// Variable scope test
+var global = "global"
+if true {
+    var local = "local"
+    global = "modified"
+}
+
+// Complex expressions in initialization
+var a = 5
+var b = 10
+var sum = a + b
+var product = a * b
+var comparison = a < b
+
+// String operations
+var firstName = "John"
+var lastName = "Doe"
+var fullName = firstName + " " + lastName
+
+// Boolean operations
+var isTrue = true
+var isFalse = false
+var andResult = isTrue and isFalse
+var orResult = isTrue or isFalse

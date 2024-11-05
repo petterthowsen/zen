@@ -1,0 +1,61 @@
+// Arithmetic operations
+var add = 5 + 3
+var sub = 10 - 4
+var mul = 6 * 7
+var div = 20 / 5
+var complex = (2 + 3) * 4
+
+// String concatenation
+var str1 = "Hello"
+var str2 = "World"
+var greeting = str1 + " " + str2
+
+// Comparison operations
+var eq = 5 == 5
+var neq = 5 != 3
+var lt = 3 < 5
+var lte = 5 <= 5
+var gt = 5 > 3
+var gte = 5 >= 5
+
+// Logical operations
+var and1 = true and true
+var and2 = true and false
+var or1 = true or false
+var or2 = false or false
+var not1 = not true
+var not2 = not false // unary negation uses the NOT keyword (literal "not")
+
+// Complex expressions
+var a = 5
+var b = 3
+var c = 2
+var complex1 = a * b + c
+var complex2 = a * (b + c)
+var complex3 = (a + b) * (a - b)
+
+// Mixed type comparisons
+var str3 = "hello"
+var str4 = "hello"
+var strEq = str3 == str4
+var strNeq = str3 != "world"
+
+// Logical expressions with comparisons
+var num1 = 10
+var num2 = 20
+var logicalComplex = (num1 < num2) and (num2 > 15)
+
+// Operator precedence
+var precedence1 = 2 + 3 * 4
+var precedence2 = (2 + 3) * 4
+var precedence3 = not true and false
+var precedence4 = not (true and false)
+
+// Unary operations
+var unary1 = -5
+var unary2 = -(-5)
+var unary3 = not not true
+
+// Chained comparisons
+var chain1 = 1 < 2 and 2 < 3
+var chain2 = 5 > 3 and 3 > 1

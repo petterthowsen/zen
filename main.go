@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"zen/interpreter"
 	"zen/lang/common"
 	"zen/lang/lexing"
 	"zen/lang/parsing"
@@ -22,8 +23,8 @@ var VERBOSE bool
 func main() {
 	flag.BoolVar(&DEBUG, "debug", false, "enable debug mode")
 
-	flag.BoolVar(&REPL, "interactive", false, "enable interactive mode aka Read-Eval-Print Loop (REPL)")
-	flag.BoolVar(&REPL, "i", false, "enable interactive mode aka Read-Eval-Print Loop (REPL)")
+	flag.BoolVar(&REPL, "interactive", false, "Run a Read-Eval-Print Loop (REPL)")
+	flag.BoolVar(&REPL, "i", false, "enable interactive mode (REPL)")
 
 	flag.BoolVar(&DEBUG_TOKENS, "tokens", false, "show tokenized input")
 	flag.BoolVar(&DEBUG_PARSE_TREE, "ast", false, "show parse tree")
@@ -79,6 +80,7 @@ func loadFileSource(filename string) common.SourceCode {
 }
 
 func execute(code common.SourceCode) {
+	// tokenize
 	lexer := lexing.NewLexer(code)
 
 	tokens, err := lexer.Scan()
@@ -99,20 +101,30 @@ func execute(code common.SourceCode) {
 		}
 	}
 
-	if err == nil {
-		parser := parsing.NewParser(tokens, true)
-		program, syntaxErrors := parser.Parse()
+	// stop?
+	if err != nil {
+		return
+	}
 
-		if len(syntaxErrors) > 0 {
-			printSyntaxErrors(syntaxErrors)
+	// parse
+	parser := parsing.NewParser(tokens, true)
+	program, syntaxErrors := parser.Parse()
+
+	if DEBUG_PARSE_TREE {
+		if DEBUG_TOKENS {
+			fmt.Println("-----------------------------------------")
 		}
+		fmt.Println("AST:")
+		fmt.Println(program.String(2))
+	}
 
-		if DEBUG_PARSE_TREE {
-			if DEBUG_TOKENS {
-				fmt.Println("-----------------------------------------")
-			}
-			fmt.Println("AST:")
-			fmt.Println(program.String(2))
+	if len(syntaxErrors) > 0 {
+		printSyntaxErrors(syntaxErrors)
+	} else {
+		// execute
+		i := interpreter.NewInterpreter()
+		if err := i.Execute(program); err != nil {
+			fmt.Println("Interpreter error:", err)
 		}
 	}
 
