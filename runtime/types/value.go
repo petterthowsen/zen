@@ -10,10 +10,26 @@ const (
 	TypeFloat             // 32 bits
 	TypeInt64
 	TypeFloat64
+
 	TypeString
+
 	TypeBool
+
 	TypeNull
 	TypeVoid
+
+	// TypeFunction denotes a named or an anonymous function
+	TypeFunction
+	TypeBuiltinFunction
+
+	// TypeLambda denotes an anonymous closure
+	TypeLambda
+
+	// TypeClass denotes a class
+	TypeClass
+
+	// TypeObject denotes an object instance (e.g., an instance of a class)
+	TypeObject
 )
 
 // String returns the string representation of a Type
@@ -35,6 +51,14 @@ func (t Type) String() string {
 		return "null"
 	case TypeVoid:
 		return "void"
+	case TypeFunction:
+		return "function"
+	case TypeLambda:
+		return "lambda"
+	case TypeClass:
+		return "class"
+	case TypeObject:
+		return "object"
 	default:
 		return "unknown"
 	}
@@ -54,7 +78,8 @@ type Value interface {
 	// IsTruthy returns true if this value is considered true in a boolean context
 	IsTruthy() bool
 
-	// Clone returns a deep copy of this value
+	// Clone returns a copy of this value: For primitives, it's a deep copy
+	// For objects, it's a shallow copy
 	Clone() Value
 }
 

@@ -21,12 +21,17 @@ type Interpreter struct {
 }
 
 // NewInterpreter creates a new interpreter instance
+// Built-in functions are registered automatically
 func NewInterpreter() *Interpreter {
-	return &Interpreter{
+	interp := &Interpreter{
 		env:        environment.NewEnvironment(),
 		inFunction: false,
 		inLoop:     false,
 	}
+
+	interp.env.RegisterBuiltInFunctions()
+
+	return interp
 }
 
 // Execute runs a complete Zen program
@@ -59,7 +64,7 @@ func (i *Interpreter) ExecuteStatement(stmt ast.Statement) error {
 }
 
 // GetValue retrieves a variable's value from the current environment
-func (i *Interpreter) GetValue(name string) (interface{}, error) {
+func (i *Interpreter) GetValue(name string) (types.Value, error) {
 	val, err := i.env.Get(name)
 	if err != nil {
 		return nil, err
@@ -91,9 +96,11 @@ func (i *Interpreter) EvaluateExpression(expr ast.Expression) (types.Value, erro
 		return i.evaluateUnary(e)
 	case *expression.BinaryExpression:
 		return i.evaluateBinary(e)
+	case *expression.CallExpression:
+		return i.evaluateCall(e)
 	default:
 		return nil, &RuntimeError{
-			Message:  "Unknown expression type",
+			Message:  "Unknown expression type: " + fmt.Sprintf("%T", e),
 			Location: expr.GetLocation(),
 		}
 	}
@@ -112,8 +119,9 @@ func (i *Interpreter) evaluateLiteral(expr *expression.LiteralExpression) (types
 }
 
 // evaluateIdentifier handles variable references
+// Returns either a types.Value
 func (i *Interpreter) evaluateIdentifier(expr *expression.IdentifierExpression) (types.Value, error) {
-	value, err := i.env.Get(expr.Name)
+	value, err := i.GetValue(expr.Name)
 	if err != nil {
 		return nil, &RuntimeError{
 			Message:  fmt.Sprintf("Undefined variable '%s'", expr.Name),
@@ -121,15 +129,7 @@ func (i *Interpreter) evaluateIdentifier(expr *expression.IdentifierExpression) 
 		}
 	}
 
-	// Convert Go value to Zen value
-	val, err := types.FromGoValue(value)
-	if err != nil {
-		return nil, &RuntimeError{
-			Message:  err.Error(),
-			Location: expr.GetLocation(),
-		}
-	}
-	return val, nil
+	return value, nil
 }
 
 // evaluateUnary handles unary operations (-x, not x)
@@ -240,6 +240,25 @@ func (i *Interpreter) evaluateBinary(expr *expression.BinaryExpression) (types.V
 		}
 	}
 	return result, nil
+}
+
+// evaluateCall handles function calls
+func (i *Interpreter) evaluateCall(expr *expression.CallExpression) (types.Value, error) {
+	// evaluate Callee, if it resolves to a Callable, we call it. Otherwise we return an error
+	callee, err := i.EvaluateExpression(expr.Callee)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check that callee is callable
+	if !types.IsCallable(callee) {
+		return nil, &RuntimeError{
+			Message:  fmt.Sprintf("Cannot call value of type %s", callee.Type()),
+			Location: expr.GetLocation(),
+		}
+	}
+
+	return i.env.Call(expr)
 }
 
 // executeVarDeclaration handles variable and constant declarations

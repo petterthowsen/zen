@@ -62,12 +62,21 @@ func (e *Environment) DefineGlobal(name string, value interface{}) error {
 }
 
 func (e *Environment) RegisterBuiltInFunctions() {
-	printFn := types.NewBuiltinFunction("print", []types.FunctionParameter{{Name: "value"}}, nil, false, global.Print)
+	printFn := types.BuiltinFunction{
+		Name: "print",
+		Parameters: []*types.FunctionParameterHint{
+			types.NewFunctionParameterHint("str", types.TypeString, false),
+		},
+		ReturnType: nil,
+		Async:      false,
+		Func:       global.Print,
+	}
+
 	e.global.Define("print", printFn)
 }
 
 // Get retrieves a variable's value from the current scope chain
-func (e *Environment) Get(name string) (interface{}, error) {
+func (e *Environment) Get(name string) (types.Type, error) {
 	return e.current.Get(name)
 }
 
